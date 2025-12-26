@@ -27,8 +27,9 @@ if (!function_exists('oss_strlen')) {
 final class OSSWrapper extends OU_ALIOSS {
 	private $position = 0, $mode = '', $buffer;
 
-    // Ensure compatibility with PHP 8.x
-    // Removed private $buffer; redeclaration if it was inherited, but it wasn't.
+    // PHP 8.2+ compatibility: Explicitly declare dynamic properties
+    public $url;
+    public $context;
 
 	private function safeSubstr($string, $start, $length = null) {
         $string = $string ?? '';

@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: WP Aliyun OSS Upload
+ * Plugin Name: Aliyun OSS Upload
  * Version: 4.9.0
  * Description: Upload with Aliyun OSS, with modified OSS Wrapper and fully native image edit function support.
  * Plugin URI: https://github.com/karrychow/wp-aliyun-oss-upload
@@ -188,13 +188,13 @@ function oss_upload_admin_init() {
 
 add_action('admin_menu', 'oss_upload_admin_menu');
 function oss_upload_admin_menu() {
-    $menu = __('WP Aliyun OSS Upload','wp-aliyun-oss-upload');
+    $menu = __('Aliyun OSS Upload','wp-aliyun-oss-upload');
     add_options_page($menu, $menu, 'manage_options', 'wp-aliyun-oss-upload', 'oss_upload_options_page');
 }
 
 add_filter('views_upload', 'oss_upload_views_upload');
 function oss_upload_views_upload($views){
-    $link = oss_upload_link('options-general.php?page=wp-aliyun-oss-upload', __('WP Aliyun OSS Upload','wp-aliyun-oss-upload'), 'button');
+    $link = oss_upload_link('options-general.php?page=wp-aliyun-oss-upload', __('Aliyun OSS Upload','wp-aliyun-oss-upload'), 'button');
     if(is_super_admin()) $views['actions'] = $link;
     return $views;
 }
@@ -202,7 +202,7 @@ function oss_upload_views_upload($views){
 add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'oss_upload_settings_link');
 function oss_upload_settings_link($links) {
     if(is_multisite() && (!is_main_site() || !is_super_admin())) return $links;
-    $osslink = array(oss_upload_link('options-general.php?page=oss-upload', __('Settings','oss-upload')));
+    $osslink = array(oss_upload_link('options-general.php?page=wp-aliyun-oss-upload', __('Settings','wp-aliyun-oss-upload')));
     return array_merge($osslink, $links);
 }
 
@@ -230,9 +230,9 @@ function oss_upload_show_more($cols, $ret=false){
 
 add_filter('manage_settings_page_oss-upload_columns', 'oss_upload_setting_columns');
 function oss_upload_setting_columns($cols){
-    $cols['_title'] = __('For Less','oss-upload');
-    $cols['oss_upload_desc'] = __('Descriptions', 'oss-upload');
-    $cols['oss_upload_example'] = __('Examples', 'oss-upload');
+    $cols['_title'] = __('For Less','wp-aliyun-oss-upload');
+    $cols['oss_upload_desc'] = __('Descriptions', 'wp-aliyun-oss-upload');
+    $cols['oss_upload_example'] = __('Examples', 'wp-aliyun-oss-upload');
     return $cols;
 }
 
@@ -253,13 +253,13 @@ function oss_upload_enqueue(){
 function oss_upload_post_meta_boxes(){
     $screen = get_current_screen();
     if($screen->id == 'post' && method_exists($screen, 'is_block_editor') && $screen->is_block_editor()){
-        add_meta_box('open_social_post_meta_class', __('OSS Upload', 'oss-upload'),
+        add_meta_box('open_social_post_meta_class', __('Aliyun OSS Upload', 'wp-aliyun-oss-upload'),
             'oss_upload_post_action', 'post', 'side', 'default');
     }
 }
 
 function oss_upload_post_action(){
-    $post = __('Autosave remote images to OSS', 'oss-upload');
+    $post = __('Autosave remote images to OSS', 'wp-aliyun-oss-upload');
     echo "<div class=misc-pub-section><label><input name='oss_upload_remote_hidden' type='hidden' value='1' /><input name='oss_upload_remote' type='checkbox' value='1' ".checked(ouops('oss_remote'),1,0)." /> {$post}</label></div>";
 }
 
@@ -556,15 +556,15 @@ function oss_upload_setting_screen() {
     if($screen->id != 'settings_page_oss-upload' || !ouops('oss')) return;
     $css = '<style>.metabox-prefs span {display: inline-block; vertical-align: text-bottom; margin: 1px 0 0 2px; padding: 0 5px; border-radius: 5px; background-color: #ca4a1f; color: #fff; font-size: 10px; line-height: 17px;}</style>';
     $help_content = '<p>'.oss_upload_data('Description').'</p><br/><p>'.
-        oss_upload_link('//promotion.aliyun.com/ntms/yunparter/invite.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('Aliyun Coupon <span>NEW</span>', 'oss-upload'), 'button,blank').
-        oss_upload_link('//promotion.aliyun.com/ntms/act/oss-discount.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('OSS Discount <span>HOT</span>', 'oss-upload'), 'button,blank').
-        oss_upload_link('//wordpress.org/plugins/oss-upload/', __('Rating Stars', 'oss-upload'), 'button,blank').
-        oss_upload_link(oss_upload_data('PluginURI'), __('Support and Help', 'oss-upload'), 'button,blank').
-        oss_upload_link('//www.imkarry.com/about', __('About Developer', 'oss-upload'), 'button,blank').
-    $help_sidebar = $css.'<p><strong>'.__('About', 'oss-upload').'</strong></p>'.
-        oss_upload_link('//oss.console.aliyun.com/index', __('Aliyun OSS', 'oss-upload'), 'p,blank').
-        oss_upload_link('//help.aliyun.com/document_detail/32174.html', __('OSS PHP SDK', 'oss-upload'), 'p,blank');
-    $screen->add_help_tab(array('id'=>'oss_upload_help', 'title'=>__('For More', 'oss-upload'), 'content'=>$help_content));
+        oss_upload_link('//promotion.aliyun.com/ntms/yunparter/invite.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('Aliyun Coupon <span>NEW</span>', 'wp-aliyun-oss-upload'), 'button,blank').
+        oss_upload_link('//promotion.aliyun.com/ntms/act/oss-discount.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('OSS Discount <span>HOT</span>', 'wp-aliyun-oss-upload'), 'button,blank').
+        oss_upload_link('//wordpress.org/plugins/oss-upload/', __('Rating Stars', 'wp-aliyun-oss-upload'), 'button,blank').
+        oss_upload_link(oss_upload_data('PluginURI'), __('Support and Help', 'wp-aliyun-oss-upload'), 'button,blank').
+        oss_upload_link('//www.imkarry.com/about', __('About Developer', 'wp-aliyun-oss-upload'), 'button,blank').
+    $help_sidebar = $css.'<p><strong>'.__('About', 'wp-aliyun-oss-upload').'</strong></p>'.
+        oss_upload_link('//oss.console.aliyun.com/index', __('Aliyun OSS', 'wp-aliyun-oss-upload'), 'p,blank').
+        oss_upload_link('//help.aliyun.com/document_detail/32174.html', __('OSS PHP SDK', 'wp-aliyun-oss-upload'), 'p,blank');
+    $screen->add_help_tab(array('id'=>'oss_upload_help', 'title'=>__('For More', 'wp-aliyun-oss-upload'), 'content'=>$help_content));
     $screen->set_help_sidebar($help_sidebar);
 }
 
@@ -578,22 +578,22 @@ function oss_upload_admin_note(){
             $file = ouops('oss_path').'/oss_upload_'.$rnd.'.txt';
             $try = file_put_contents($file, $rnd);
             if($try == strlen($rnd)){
-                $out = __('Write OK, ','oss-upload');
+                $out = __('Write OK, ','wp-aliyun-oss-upload');
                 $try = file_get_contents($file);
                 if($try == $rnd){
-                    $out .= __('Read OK, ', 'oss-upload');
+                    $out .= __('Read OK, ', 'wp-aliyun-oss-upload');
                     $try = unlink($file);
                     if($try === true){
-                        $out .= __('Delete OK', 'oss-upload');
+                        $out .= __('Delete OK', 'wp-aliyun-oss-upload');
                         $ok = true;
                     }else{
-                        throw new RequestCore_Exception($out . __('Delete Error: ', 'oss-upload') . $try);
+                        throw new RequestCore_Exception($out . __('Delete Error: ', 'wp-aliyun-oss-upload') . $try);
                     }
                 }else{
-                    throw new RequestCore_Exception($out . __('Read Error: ', 'oss-upload') . $try);
+                    throw new RequestCore_Exception($out . __('Read Error: ', 'wp-aliyun-oss-upload') . $try);
                 }
             }else{
-                throw new RequestCore_Exception($out . __('Write Error: ', 'oss-upload') . $try);
+                throw new RequestCore_Exception($out . __('Write Error: ', 'wp-aliyun-oss-upload') . $try);
             }
         }catch(Exception $ex){
             $out = esc_html($ex->message);
@@ -618,15 +618,15 @@ function oss_upload_admin_action(){
     @set_time_limit(0);
     ob_end_clean();
     echo str_pad('',1024);
-    echo '<title>'.__('OSS Upload','oss-upload').'</title>';
-    echo "<h1>".__('Starting...', 'oss-upload')."</h1>\n";
+    echo '<title>'.__('Aliyun OSS Upload','wp-aliyun-oss-upload').'</title>';
+    echo "<h1>".__('Starting...', 'wp-aliyun-oss-upload')."</h1>\n";
     flush();
     $index = 1;
     $upload = wp_get_upload_dir();
     if($action == 'clean'){
         try{
             $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
-            $postfix = __('deleted', 'oss-upload');
+            $postfix = __('deleted', 'wp-aliyun-oss-upload');
             $paths = array();
             foreach ($files as $file){
                 $path = pathinfo(get_attached_file($file->ID), 1);
@@ -656,10 +656,10 @@ function oss_upload_admin_action(){
                 }
             }
             if($index == 1){
-                echo __('No thumbnail found','oss-upload');
+                echo __('No thumbnail found','wp-aliyun-oss-upload');
             }else{
                 echo '<br/><hr/>';
-                echo __('Clean thumbnails done','oss-upload');
+                echo __('Clean thumbnails done','wp-aliyun-oss-upload');
             }
         }catch(Exception $ex){
             echo $ex->getMessage();
@@ -670,13 +670,13 @@ function oss_upload_admin_action(){
             $ossw = new OU_ALIOSS;
             $ossw->create_mtu_object_by_dir($basedir[0], $upload['default']['basedir'], true);
             echo '<br/><hr/>';
-            echo __('Upload local storage to OSS done', 'oss-upload');
+            echo __('Upload local storage to OSS done', 'wp-aliyun-oss-upload');
         }catch(Exception $ex){
             echo $ex->getMessage();
         }
     }else if($action == 'sync'){
         $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
-        $postfix = __('synced', 'oss-upload');
+        $postfix = __('synced', 'wp-aliyun-oss-upload');
         foreach ($files as $file){
             $oss = get_attached_file($file->ID);
             $local = str_replace($upload['basedir'], $upload['default']['basedir'], $oss);
@@ -686,15 +686,15 @@ function oss_upload_admin_action(){
             }
         }
         if($index == 1){
-            echo __('No attachments need to be synced','oss-upload');
+            echo __('No attachments need to be synced','wp-aliyun-oss-upload');
         }else{
             echo '<br/><hr/>';
-            echo __('Sync missing attachments to OSS done','oss-upload');
+            echo __('Sync missing attachments to OSS done','wp-aliyun-oss-upload');
         }
     }else if($action == 'reset'){
         @ini_set('memory_limit','2048M');
         $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
-        $postfix = __('reset', 'oss-upload');
+        $postfix = __('reset', 'wp-aliyun-oss-upload');
         foreach ($files as $file){
             if(!wp_attachment_is_image($file->ID)) continue;
             $img = get_attached_file($file->ID);
@@ -704,7 +704,7 @@ function oss_upload_admin_action(){
             flush();
         }
         echo '<br/><hr/>';
-        echo __('Reset attachments metadata done','oss-upload');
+        echo __('Reset attachments metadata done','wp-aliyun-oss-upload');
     }
     flush();
     exit();
@@ -714,47 +714,47 @@ function oss_upload_options_page(){
     $upload = wp_get_upload_dir();
     ?>
     <div class="wrap">
-        <h1><?php _e('OSS Upload','oss-upload')?>
+        <h1><?php _e('Aliyun OSS Upload','wp-aliyun-oss-upload')?>
             <a class="page-title-action" href="<?php echo oss_upload_data('PluginURI');?>" target="_blank"><?php echo oss_upload_data('Version');?></a>
         </h1>
         <form action="options.php" method="post">
         <?php settings_fields('oss_upload_admin_options_group'); ?>
         <table class="form-table">
         <tr valign="top">
-        <th scope="row"><?php _e('Enable','oss-upload')?></th>
+        <th scope="row"><?php _e('Enable','wp-aliyun-oss-upload')?></th>
         <td>
             <label><input name="ouop[oss]" type="checkbox" value="1" <?php checked(ouops('oss'),1);?> />
-            <?php _e('Use OSS as media library storage','oss-upload')?></label>
+            <?php _e('Use OSS as media library storage','wp-aliyun-oss-upload')?></label>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Access Key','oss-upload')?></th>
+        <th scope="row"><?php _e('Access Key','wp-aliyun-oss-upload')?></th>
         <td>
             <input type="text" name="ouop[oss_akey]" size="60" placeholder="Access Key" value="<?php echo ouops('oss_akey')?>" required />
             <?php echo oss_upload_link('//ak-console.aliyun.com/', '?', 'blank'); ?>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Secret Key','oss-upload')?></th>
+        <th scope="row"><?php _e('Secret Key','wp-aliyun-oss-upload')?></th>
         <td>
             <input type="password" name="ouop[oss_skey]" size="60" placeholder="Secret Key" value="<?php echo ouops('oss_skey')?>" required />
             <?php echo oss_upload_link('//ak-console.aliyun.com/', '?', 'blank'); ?>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Upload Path','oss-upload')?></th>
+        <th scope="row"><?php _e('Upload Path','wp-aliyun-oss-upload')?></th>
         <td>
             <input type="url" name="ouop[oss_path]" size="60" placeholder="oss://{BUCKET}/{PATH}" value="<?php echo rtrim(ouops('oss_path'), '/');?>" required />
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank'); ?>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('<code>{BUCKET}</code> is Bucket name, <code>{PATH}</code> can be empty, with no slash at the end','oss-upload')?></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('<code>{BUCKET}</code> is Bucket name, <code>{PATH}</code> can be empty, with no slash at the end','wp-aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>oss://my-bucket</code></small></p>
             <p><small><code>oss://my-bucket/uploads</code></small></p>
             </div>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Visit URL','oss-upload')?></th>
+        <th scope="row"><?php _e('Visit URL','wp-aliyun-oss-upload')?></th>
         <td>
             <input type="url" name="ouop[oss_url]" size="60" placeholder="http://oss.aliyuncs.com/{BUCKET}/{PATH}" value="<?php echo rtrim(ouops('oss_url'), '/');?>" required />
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank'); ?>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('<code>{BUCKET}</code> can be directory or domain, <code>{PATH}</code> can be empty','oss-upload')?></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('<code>{BUCKET}</code> can be directory or domain, <code>{PATH}</code> can be empty','wp-aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>http://my-bucket.oss-cn-shenzhen.aliyuncs.com</code></small></p>
             <p><small><code>http://my-bucket.oss-cn-shenzhen.aliyuncs.com/uploads</code></small></p>
@@ -764,11 +764,11 @@ function oss_upload_options_page(){
             </div>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Upload EndPoint','oss-upload')?></th>
+        <th scope="row"><?php _e('Upload EndPoint','wp-aliyun-oss-upload')?></th>
         <td>
             <input type="text" name="ouop[oss_endpoint]" size="60" placeholder="oss-cn-hangzhou.aliyuncs.com" value="<?php echo ouops('oss_endpoint')?>" required />
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/31837.html', '?', 'blank'); ?>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Endpoint of your Bucket, can be internal address if WEB SERVER is in the same area with OSS','oss-upload')?></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Endpoint of your Bucket, can be internal address if WEB SERVER is in the same area with OSS','wp-aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>oss-cn-hangzhou.aliyuncs.com</code></small></p>
             <p><small><code>oss-cn-shenzhen.aliyuncs.com</code></small></p>
@@ -782,93 +782,93 @@ function oss_upload_options_page(){
         <td>
             <?php
             if(ouops('oss') && ouops('oss_akey') && ouops('oss_skey') && ouops('oss_endpoint')){
-                echo oss_upload_link('options-general.php?page=oss-upload&settings-updated=test', __('Run a test', 'oss-upload'), 'p,button');
+                echo oss_upload_link('options-general.php?page=wp-aliyun-oss-upload&settings-updated=test', __('Run a test', 'wp-aliyun-oss-upload'), 'p,button');
             } ?>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Image Thumbnails','oss-upload')?></th>
+        <th scope="row"><?php _e('Image Thumbnails','wp-aliyun-oss-upload')?></th>
         <td>
-            <p><label><input name="ouop[oss_service]" type="radio" value="0" <?php checked(ouops('oss_service'),0);?> /> <?php _e('Use Image Service via Parameter, default and simple','oss-upload')?></label>
+            <p><label><input name="ouop[oss_service]" type="radio" value="0" <?php checked(ouops('oss_service'),0);?> /> <?php _e('Use Image Service via Parameter, default and simple','wp-aliyun-oss-upload')?></label>
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/44688.html', '?', 'blank'); ?></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg?x-oss-process=image%2Fquality,q_<?php echo ouops('oss_quality') ? intval(ouops('oss_quality')) : '50'; ?>%2Fresize,m_fill,w_{width},h_{height}</code></small></p><br/>
-            <p><label><input name="ouop[oss_service]" type="radio" value="1" <?php checked(ouops('oss_service'),1);?> /> <?php _e('Use Image Service via Style, powerful but require styles setting on OSS','oss-upload')?></label>
+            <p><label><input name="ouop[oss_service]" type="radio" value="1" <?php checked(ouops('oss_service'),1);?> /> <?php _e('Use Image Service via Style, powerful but require styles setting on OSS','wp-aliyun-oss-upload')?></label>
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/44687.html', '?', 'blank'); ?></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg<?php echo ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'; ?>{style}</code>:
             <?php foreach (get_intermediate_image_sizes() as $v){ echo '<code>'.$v.'</code> '; } ?>
             </small></p><br/>
-            <p><label><input name="ouop[oss_service]" type="radio" value="10" <?php checked(ouops('oss_service'),10);?> /> <?php _e('Use physical thumbnails, check this when having problem with theme','oss-upload')?></label></p>
+            <p><label><input name="ouop[oss_service]" type="radio" value="10" <?php checked(ouops('oss_service'),10);?> /> <?php _e('Use physical thumbnails, check this when having problem with theme','wp-aliyun-oss-upload')?></label></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo-{width}x{height}.jpg</code></small></p><br/>
-            <p><label><input name="ouop[oss_service]" type="radio" value="2" <?php checked(ouops('oss_service'),2);?> /> <?php _e('Disable image thumbnails','oss-upload')?></label></p>
+            <p><label><input name="ouop[oss_service]" type="radio" value="2" <?php checked(ouops('oss_service'),2);?> /> <?php _e('Disable image thumbnails','wp-aliyun-oss-upload')?></label></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg</code></small></p><br/>
             <p><?php
-                echo oss_upload_link('options-media.php', __('Media Sizes Options', 'oss-upload'), 'button');
-                echo oss_upload_link('?page=oss-upload&action=clean', __('Clean Thumbnails', 'oss-upload'), 'button,blank');
-                if(!ouops('oss_service',2)) echo oss_upload_link('?page=oss-upload&action=reset', __('Regenerate Thumbnails', 'oss-upload'), 'button,blank');
+                echo oss_upload_link('options-media.php', __('Media Sizes Options', 'wp-aliyun-oss-upload'), 'button');
+                echo oss_upload_link('?page=wp-aliyun-oss-upload&action=clean', __('Clean Thumbnails', 'wp-aliyun-oss-upload'), 'button,blank');
+                if(!ouops('oss_service',2)) echo oss_upload_link('?page=wp-aliyun-oss-upload&action=reset', __('Regenerate Thumbnails', 'wp-aliyun-oss-upload'), 'button,blank');
             ?></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Thumbnail Quality', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Thumbnail Quality', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input type="number" name="ouop[oss_quality]" size="10" min="1" max="99" placeholder="15" value="<?php echo ouops('oss_quality')?>" /></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Set the quality of thumbnail for OSS Image Servie to speed up image loading, the smaller the faster', 'oss-upload');?>: <code>1 ~ 99</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Set the quality of thumbnail for OSS Image Servie to speed up image loading, the smaller the faster', 'wp-aliyun-oss-upload');?>: <code>1 ~ 99</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Featured Image', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Featured Image', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label>
                 <input type="text" name="ouop[oss_size_width]" size="10" value="<?php echo ouops('oss_size_width')?>" /> x
                 <input type="text" name="ouop[oss_size_height]" size="10" value="<?php echo ouops('oss_size_height')?>" />
             </label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Set the featured image dimensions when thumbnails enabled (width x height)', 'oss-upload');?>: <code>800</code> x <code>450</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Set the featured image dimensions when thumbnails enabled (width x height)', 'wp-aliyun-oss-upload');?>: <code>800</code> x <code>450</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('HD Thumbnails', 'oss-upload')?></th>
+        <th scope="row"><?php _e('HD Thumbnails', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_hd_thumbnail]" type="checkbox" value="1" <?php checked(ouops('oss_hd_thumbnail'),1);?> />
-            <?php _e('Disable <code>1356x1356</code>,<code>2048x2048</code> sizes when generate thumbnails','oss-upload')?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Disable the whole high definition resolution things come with WordPress 5.3 like <code>image-scaled.png</code>', 'oss-upload');?></small></p>
+            <?php _e('Disable <code>1356x1356</code>,<code>2048x2048</code> sizes when generate thumbnails','wp-aliyun-oss-upload')?></label></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Disable the whole high definition resolution things come with WordPress 5.3 like <code>image-scaled.png</code>', 'wp-aliyun-oss-upload');?></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Style Separator', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Style Separator', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input type="text" name="ouop[oss_style_separator]" size="60" value="<?php echo ouops('oss_style_separator')?>" /> <?php echo oss_upload_link('//help.aliyun.com/document_detail/48884.html', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Custom style separator for OSS Image Service style','oss-upload')?>: <code>?x-oss-process=style%2F</code> <code>-</code> <code>_</code> <code>!</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Custom style separator for OSS Image Service style','wp-aliyun-oss-upload')?>: <code>?x-oss-process=style%2F</code> <code>-</code> <code>_</code> <code>!</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Fullsize Style', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Fullsize Style', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input type="text" name="ouop[oss_fullsize_style]" size="60" value="<?php echo ouops('oss_fullsize_style')?>" />
             <?php echo oss_upload_link('//help.aliyun.com/document_detail/44686.html', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Default full size image style for OSS Image Service','oss-upload')?>: <code>full</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Default full size image style for OSS Image Service','wp-aliyun-oss-upload')?>: <code>full</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('GIF Style', 'oss-upload')?></th>
+        <th scope="row"><?php _e('GIF Style', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_gif]" type="checkbox" value="1" <?php checked(ouops('oss_gif'),1);?> />
-            <?php _e('Using special OSS Image Service style for <code>GIF</code> format','oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44957.html', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Check this to skip style for GIF image if having no animation effect','oss-upload')?>
+            <?php _e('Using special OSS Image Service style for <code>GIF</code> format','wp-aliyun-oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44957.html', '?', 'blank'); ?></label></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Check this to skip style for GIF image if having no animation effect','wp-aliyun-oss-upload')?>
             </small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Auto Compress', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Auto Compress', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_webp]" type="checkbox" value="1" <?php checked(ouops('oss_webp'),1);?> />
-            <?php _e('Compress as <code>WebP</code> format automatically if browser support','oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44703.html', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Choose webp format on OSS if using styles for Image Service','oss-upload')?></small></p>
+            <?php _e('Compress as <code>WebP</code> format automatically if browser support','wp-aliyun-oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44703.html', '?', 'blank'); ?></label></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Choose webp format on OSS if using styles for Image Service','wp-aliyun-oss-upload')?></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Lazyload', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Lazyload', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_lazyload]" type="checkbox" value="1" <?php checked(ouops('oss_lazyload'),1);?> />
-            <?php _e('Delay loading of images in long web pages','oss-upload')?>
+            <?php _e('Delay loading of images in long web pages','wp-aliyun-oss-upload')?>
             <?php echo oss_upload_link('//plugins.jquery.com/lazyload/', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Images outside of viewport wont be loaded before user scrolls to them','oss-upload')?></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Images outside of viewport wont be loaded before user scrolls to them','wp-aliyun-oss-upload')?></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Lazyload URL', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Lazyload URL', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input type="text" name="ouop[oss_lazyurl]" size="60" value="<?php echo ouops('oss_lazyurl')?>" /></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Default image url for lazyload, could be with Image Service suffix, or base64 data, or normal url. <code>{IMG}</code> means original','oss-upload')?></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Default image url for lazyload, could be with Image Service suffix, or base64 data, or normal url. <code>{IMG}</code> means original','wp-aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>{IMG}?x-oss-process=image%2Fquality,q_10%2Fresize,m_lfit,w_20</code></small></p>
             <p><small><code>{IMG}<?php echo ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'; ?>lazyload-style</code></small></p>
@@ -877,50 +877,50 @@ function oss_upload_options_page(){
             </div>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Upload Mimes', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Upload Mimes', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input type="text" name="ouop[upload_mimes]" size="60" value="<?php echo ouops('upload_mimes')?>" />
                 <?php echo oss_upload_link('//codex.wordpress.org/Function_Reference/get_allowed_mime_types', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Add file extensions and mime types to the allowed upload list','oss-upload')?>: <code>flac=audio/x-flac,py=text/x-python</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Add file extensions and mime types to the allowed upload list','wp-aliyun-oss-upload')?>: <code>flac=audio/x-flac,py=text/x-python</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Auto Rename', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Auto Rename', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_rename]" type="checkbox" value="1" <?php checked(ouops('oss_rename'),1);?> />
-            <?php _e('Auto rename uploaded file if having like Non-ASCII problem','oss-upload')?></label></p>
+            <?php _e('Auto rename uploaded file if having like Non-ASCII problem','wp-aliyun-oss-upload')?></label></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('URL Fixer', 'oss-upload')?></th>
+        <th scope="row"><?php _e('URL Fixer', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_url_back]" type="checkbox" value="1" <?php checked(ouops('oss_url_back'),1);?> />
-            <?php _e('Auto relocate attachments in past posts when OSS disabled','oss-upload')?></label></p><br/>
+            <?php _e('Auto relocate attachments in past posts when OSS disabled','wp-aliyun-oss-upload')?></label></p><br/>
             <p><label><input type="text" name="ouop[oss_url_find]" size="60" value="<?php echo ouops('oss_url_find')?>" /></label></p>
             <p><label><input type="text" name="ouop[oss_url_replace]" size="60" value="<?php echo ouops('oss_url_replace')?>" /></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Find and replace whatever strings you want to fix the attachment url','oss-upload')?>: <code>http,upload</code> <code>https,uploads</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Find and replace whatever strings you want to fix the attachment url','wp-aliyun-oss-upload')?>: <code>http,upload</code> <code>https,uploads</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Remote Image', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Remote Image', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_remote]" type="checkbox" value="1" <?php checked(ouops('oss_remote'),1);?> />
-            <?php _e('Enable remote images autosave when edit post/page','oss-upload')?></label></p><br/>
+            <?php _e('Enable remote images autosave when edit post/page','wp-aliyun-oss-upload')?></label></p><br/>
             <p><label><input name="ouop[oss_upload_remote]" type="checkbox" value="1" <?php checked(ouops('oss_upload_remote'),1);?> />
-            <?php _e('Enable remote images autosave when import post/page','oss-upload')?></label></p><br/>
+            <?php _e('Enable remote images autosave when import post/page','wp-aliyun-oss-upload')?></label></p><br/>
             <p><label><input type="text" name="ouop[oss_remote_white]" size="60" value="<?php echo ouops('oss_remote_white')?>" /></label></p>
             <p><label><input type="text" name="ouop[oss_remote_black]" size="60" value="<?php echo ouops('oss_remote_black')?>" /></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Whitelist / Blacklist rules for remote images autosave','oss-upload')?>: <code>jianshu.io</code> <code>noimg.com,icon.com</code></small></p>
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Whitelist / Blacklist rules for remote images autosave','wp-aliyun-oss-upload')?>: <code>jianshu.io</code> <code>noimg.com,icon.com</code></small></p>
         </td></tr>
         <tr valign="top">
-        <th scope="row"><?php _e('Local Backup', 'oss-upload')?></th>
+        <th scope="row"><?php _e('Local Backup', 'wp-aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_backup]" type="checkbox" value="1" <?php checked(ouops('oss_backup'),1);?> />
-            <?php _e('Backup original image to local storage','oss-upload')?> <small><code>
+            <?php _e('Backup original image to local storage','wp-aliyun-oss-upload')?> <small><code>
             <?php
                 echo isset($upload['default']['basedir']) ? $upload['default']['basedir'] : $upload['basedir'];
             ?>
             </code></small></label></p><br />
             <?php
-                echo oss_upload_link('?page=oss-upload&action=sync', __('Upload Missing Attachment', 'oss-upload'), 'button,blank');
-                echo oss_upload_link('?page=oss-upload&action=upload', __('Upload Whole Local Storage', 'oss-upload'), 'button,blank');
+                echo oss_upload_link('?page=wp-aliyun-oss-upload&action=sync', __('Upload Missing Attachment', 'wp-aliyun-oss-upload'), 'button,blank');
+                echo oss_upload_link('?page=wp-aliyun-oss-upload&action=upload', __('Upload Whole Local Storage', 'wp-aliyun-oss-upload'), 'button,blank');
             ?>
         </td></tr>
         </table>
@@ -934,16 +934,16 @@ function oss_upload_options_page(){
                 if(jQuery(this).val().indexOf(jQuery(this).attr('placeholder').substr(0,4))!=0) jQuery(this).val('');
             });
             jQuery('a[href*="action=clean"]').click(function(){
-                return confirm("<?php _e('This action would clean all thumbnails including local and OSS that filename like photo-800x600.png, cannot be undone, comfirm to process?','oss-upload');?>");
+                return confirm("<?php _e('This action would clean all thumbnails including local and OSS that filename like photo-800x600.png, cannot be undone, comfirm to process?','wp-aliyun-oss-upload');?>");
             });
             jQuery('a[href*="action=upload"]').click(function(){
-                return confirm("<?php _e('This action would upload local storage directory to OSS, override if file exists, might take several minutes, comfirm to process?','oss-upload');?>");
+                return confirm("<?php _e('This action would upload local storage directory to OSS, override if file exists, might take several minutes, comfirm to process?','wp-aliyun-oss-upload');?>");
             });
             jQuery('a[href*="action=sync"]').click(function(){
-                return confirm("<?php _e('This action would upload attachment from local storage that missing in OSS, might take several minutes, comfirm to process?','oss-upload');?>");
+                return confirm("<?php _e('This action would upload attachment from local storage that missing in OSS, might take several minutes, comfirm to process?','wp-aliyun-oss-upload');?>");
             });
             jQuery('a[href*="action=reset"]').click(function(){
-                return confirm("<?php _e('This action would regenerate metadata of all attachment in OSS, might take several minutes, comfirm to process?','oss-upload');?>");
+                return confirm("<?php _e('This action would regenerate metadata of all attachment in OSS, might take several minutes, comfirm to process?','wp-aliyun-oss-upload');?>");
             });
         </script>
         <?php submit_button();?>
