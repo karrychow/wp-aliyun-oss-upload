@@ -1,10 +1,10 @@
-=== OSS Upload ===
+=== WP Aliyun OSS Upload ===
 
-Contributors: Link
-Donate link: https://www.xiaomac.com/about
+Contributors: Karry
+Donate link: https://github.com/karrychow/wp-aliyun-oss-upload
 Tags: aliyun, oss, upload, media, files, storage, cloud, 阿里云, 媒体库, 图片, 上传, 云存储
-Tested up to: 5.3.2
-Stable tag: 4.9
+Tested up to: 6.7
+Stable tag: 4.9.0
 
 == Description ==
 
@@ -12,25 +12,25 @@ Stable tag: 4.9
 
 ### 功能 ###
 
-* 全新支持远程图片自动上传！
-* 全新支持大文件自动分块上传
-* 全新支持备份模式更方便切换
-* 独创协议支持所有原生上传功能
-* 支持修改默认的图像编辑器类
-* 支持自动识别并生成WEBP格式
-* 带中英文附带设置说明和示范
+* 全新支持 remote image auto upload!
+* 全新 support large file auto multipart upload
+* 全新 support backup mode for easier switching
+* 独创 protocol supports all native upload functions
+* Support changing default image editor class
+* Support auto identify and generate WEBP format
+* With Chinese and English settings explanation and demo
 
 注：横幅图片和图标来自 OSS 官网
 
 ### 更多 ###
 
-[https://www.xiaomac.com/oss-upload.html](https://www.xiaomac.com/oss-upload.html)
+[https://github.com/KarryZhou/wp-aliyun-oss-upload](https://github.com/KarryZhou/wp-aliyun-oss-upload)
 
 == Installation ==
 
 1. Upload the plugin folder to the "/wp-content/plugins/" directory of your WordPress site
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. See Settings -> OSS Upload
+3. See Settings -> WP Aliyun OSS Upload
 
 == Frequently Asked Questions ==
 
@@ -42,8 +42,10 @@ None
 
 == Changelog ==
 
-= 4.9 =
-* 修复打开图片可能会下载的问题
+= 4.9.0 =
+* Update to support WordPress 6.7
+* Update to support Aliyun OSS SDK 2.7.2
+* Update to support PHP 8.2
 
 = 4.8.9 =
 * 修复个别主题会严重报错的问题

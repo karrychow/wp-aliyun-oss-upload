@@ -1,10 +1,12 @@
-## Hi，
+## 基于
 
-希望能在这里集思广益吧，自己毕竟一人一机可能会有逻辑不周考虑不全的情况。请多多指教：）
+[https://github.com/xiaomac/oss-upload]
+(https://github.com/xiaomac/oss-upload)
+更新
+- 原作者多年没有更新，项目已经停止维护，为了适应新的 WordPress 版本，我基于项目进行了一些更新。插件本身考虑得很全面和其他插件不冲突，图片展示方式很合理。
 
 
-
-## OSS Upload
+## WP Aliyun OSS Upload
 
 使用阿里云 OSS 作为媒体库附件存储空间，支持原创增强的 OSS 协议包装和全原生图像编辑及衍生功能。
 
@@ -20,13 +22,11 @@
 
 ### 下载
 
-https://github.com/xiaomac/oss-upload/releases
-
-注意，下载ZIP包后，其中的目录要去掉版本号（oss-upload），我还不知道怎么去掉这个版本号。
+https://github.com/karrychow/wp-aliyun-oss-upload/archive/main.zip
 
 ### 更多
 
-[https://www.xiaomac.com/oss-upload.html](https://www.xiaomac.com/oss-upload.html)
+[https://github.com/karrychow/wp-aliyun-oss-upload](https://github.com/karrychow/wp-aliyun-oss-upload)
 
 <img alt="Screenshot" width="728" src="screenshot-1.png">
 

@@ -1,12 +1,12 @@
 <?php
 /*
- * Plugin Name: OSS Upload
- * Version: 4.9
+ * Plugin Name: WP Aliyun OSS Upload
+ * Version: 4.9.0
  * Description: Upload with Aliyun OSS, with modified OSS Wrapper and fully native image edit function support.
- * Plugin URI: https://www.xiaomac.com/oss-upload.html
- * Author: Link
- * Author URI: https://www.xiaomac.com
- * Text Domain: oss-upload
+ * Plugin URI: https://github.com/karrychow/wp-aliyun-oss-upload
+ * Author: Karry
+ * Author URI: https://github.com/karrychow
+ * Text Domain: wp-aliyun-oss-upload
  * Domain Path: /lang
  * Network: true
 */
@@ -17,7 +17,14 @@ function oss_upload_init(){
     define('OSS_ACCESS_ID', trim(ouops('oss_akey')));
     define('OSS_ACCESS_KEY', trim(ouops('oss_skey')));
     define('OSS_ENDPOINT', trim(ouops('oss_endpoint')));
+
+    // Load Aliyun SDK and Adapter
+    if (file_exists(dirname(__FILE__).'/aliyun-oss-php-sdk-2.7.2/autoload.php')) {
+        require_once 'aliyun-oss-php-sdk-2.7.2/autoload.php';
+    }
+    require_once('lib/OU_ALIOSS_Adapter.php');
     require_once('lib/OSSWrapper.php');
+
     oss_upload_dir_loader();
     add_action('post_submitbox_misc_actions', 'oss_upload_post_action');
     add_action('add_meta_boxes', 'oss_upload_post_meta_boxes');
@@ -181,13 +188,13 @@ function oss_upload_admin_init() {
 
 add_action('admin_menu', 'oss_upload_admin_menu');
 function oss_upload_admin_menu() {
-    $menu = __('OSS Upload','oss-upload');
-    add_options_page($menu, $menu, 'manage_options', 'oss-upload', 'oss_upload_options_page');
+    $menu = __('WP Aliyun OSS Upload','wp-aliyun-oss-upload');
+    add_options_page($menu, $menu, 'manage_options', 'wp-aliyun-oss-upload', 'oss_upload_options_page');
 }
 
 add_filter('views_upload', 'oss_upload_views_upload');
 function oss_upload_views_upload($views){
-    $link = oss_upload_link('options-general.php?page=oss-upload', __('OSS Upload','oss-upload'), 'button');
+    $link = oss_upload_link('options-general.php?page=wp-aliyun-oss-upload', __('WP Aliyun OSS Upload','wp-aliyun-oss-upload'), 'button');
     if(is_super_admin()) $views['actions'] = $link;
     return $views;
 }
@@ -553,8 +560,7 @@ function oss_upload_setting_screen() {
         oss_upload_link('//promotion.aliyun.com/ntms/act/oss-discount.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('OSS Discount <span>HOT</span>', 'oss-upload'), 'button,blank').
         oss_upload_link('//wordpress.org/plugins/oss-upload/', __('Rating Stars', 'oss-upload'), 'button,blank').
         oss_upload_link(oss_upload_data('PluginURI'), __('Support and Help', 'oss-upload'), 'button,blank').
-        oss_upload_link('//www.xiaomac.com/about', __('About Developer', 'oss-upload'), 'button,blank').
-        oss_upload_link('//www.xiaomac.com/tag/work', __('See More Plugins', 'oss-upload'), 'button,blank').'</p>';
+        oss_upload_link('//www.imkarry.com/about', __('About Developer', 'oss-upload'), 'button,blank').
     $help_sidebar = $css.'<p><strong>'.__('About', 'oss-upload').'</strong></p>'.
         oss_upload_link('//oss.console.aliyun.com/index', __('Aliyun OSS', 'oss-upload'), 'p,blank').
         oss_upload_link('//help.aliyun.com/document_detail/32174.html', __('OSS PHP SDK', 'oss-upload'), 'p,blank');
@@ -592,7 +598,15 @@ function oss_upload_admin_note(){
         }catch(Exception $ex){
             $out = esc_html($ex->message);
         }
-        if(isset($out)) echo '<div class="'. ($ok ? 'updated fade' : 'error') . '"><p>'.$out.'</p></div>';
+        if (!isset($ok)) {
+            $ok = false;
+        }
+
+        if(isset($out)) {
+            // 安全地使用 $ok
+            $class = $ok ? 'updated fade' : 'error';
+            echo '<div class="' . esc_attr($class) . '"><p>' . esc_html($out) . '</p></div>';
+        }
     }
     if(isset($_SESSION['oss_upload_error'])){
         echo '<div class="error"><p>'.$_SESSION['oss_upload_error'].'</p></div>';
@@ -766,7 +780,7 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"></th>
         <td>
-            <?php 
+            <?php
             if(ouops('oss') && ouops('oss_akey') && ouops('oss_skey') && ouops('oss_endpoint')){
                 echo oss_upload_link('options-general.php?page=oss-upload&settings-updated=test', __('Run a test', 'oss-upload'), 'p,button');
             } ?>
@@ -786,7 +800,7 @@ function oss_upload_options_page(){
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo-{width}x{height}.jpg</code></small></p><br/>
             <p><label><input name="ouop[oss_service]" type="radio" value="2" <?php checked(ouops('oss_service'),2);?> /> <?php _e('Disable image thumbnails','oss-upload')?></label></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg</code></small></p><br/>
-            <p><?php 
+            <p><?php
                 echo oss_upload_link('options-media.php', __('Media Sizes Options', 'oss-upload'), 'button');
                 echo oss_upload_link('?page=oss-upload&action=clean', __('Clean Thumbnails', 'oss-upload'), 'button,blank');
                 if(!ouops('oss_service',2)) echo oss_upload_link('?page=oss-upload&action=reset', __('Regenerate Thumbnails', 'oss-upload'), 'button,blank');
@@ -832,7 +846,7 @@ function oss_upload_options_page(){
         <td>
             <p><label><input name="ouop[oss_gif]" type="checkbox" value="1" <?php checked(ouops('oss_gif'),1);?> />
             <?php _e('Using special OSS Image Service style for <code>GIF</code> format','oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44957.html', '?', 'blank'); ?></label></p>
-            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Check this to skip style for GIF image if having no animation effect','oss-upload')?> 
+            <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Check this to skip style for GIF image if having no animation effect','oss-upload')?>
             </small></p>
         </td></tr>
         <tr valign="top">
@@ -846,7 +860,7 @@ function oss_upload_options_page(){
         <th scope="row"><?php _e('Lazyload', 'oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_lazyload]" type="checkbox" value="1" <?php checked(ouops('oss_lazyload'),1);?> />
-            <?php _e('Delay loading of images in long web pages','oss-upload')?> 
+            <?php _e('Delay loading of images in long web pages','oss-upload')?>
             <?php echo oss_upload_link('//plugins.jquery.com/lazyload/', '?', 'blank'); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php _e('Images outside of viewport wont be loaded before user scrolls to them','oss-upload')?></small></p>
         </td></tr>

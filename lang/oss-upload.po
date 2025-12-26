@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: OSS Upload\n"
+"Project-Id-Version: WP Aliyun OSS Upload\n"
 "POT-Creation-Date: 2020-03-03 16:42+0800\n"
 "PO-Revision-Date: 2020-03-03 16:42+0800\n"
 "Last-Translator: Link <playes@qq.com>\n"
@@ -23,7 +23,7 @@ msgstr ""
 #. Plugin Name of the plugin/theme
 #: oss-upload.php:184 oss-upload.php:190 oss-upload.php:249 oss-upload.php:607
 #: oss-upload.php:703
-msgid "OSS Upload"
+msgid "WP Aliyun OSS Upload"
 msgstr ""
 
 #: oss-upload.php:198
