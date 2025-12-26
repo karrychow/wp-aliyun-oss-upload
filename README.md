@@ -1,7 +1,7 @@
 ## 基于
 
-[https://github.com/xiaomac/oss-upload]
-(https://github.com/xiaomac/oss-upload)
+[https://github.com/xiaomac/oss-upload](https://github.com/xiaomac/oss-upload)
+
 更新
 - 原作者多年没有更新，项目已经停止维护，为了适应新的 WordPress 版本，我基于项目进行了一些更新。插件本身考虑得很全面和其他插件不冲突，图片展示方式很合理。
 
