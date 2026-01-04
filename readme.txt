@@ -4,7 +4,7 @@ Contributors: Karry
 Donate link: https://github.com/karrychow/wp-aliyun-oss-upload
 Tags: aliyun, oss, upload, media, files, storage, cloud, 阿里云, 媒体库, 图片, 上传, 云存储
 Requires at least: 5.0
-Tested up to: 6.7
+Tested up to: 6.8
 Stable tag: 4.9.0
 Requires PHP: 7.4
 License: GPLv2 or later
