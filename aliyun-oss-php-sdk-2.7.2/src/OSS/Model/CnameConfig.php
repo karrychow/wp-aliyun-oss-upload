@@ -73,11 +73,9 @@ class CnameConfig implements XmlConfig
 
     public function serializeToXml()
     {
-        $strXml = <<<EOF
-<?xml version="1.0" encoding="utf-8"?>
-<BucketCnameConfiguration>
-</BucketCnameConfiguration>
-EOF;
+        $strXml = '<?xml version="1.0" encoding="utf-8"?>' . "\n" .
+                  '<BucketCnameConfiguration>' . "\n" .
+                  '</BucketCnameConfiguration>';
         $xml = new \SimpleXMLElement($strXml);
         foreach ($this->cnameList as $cname) {
             $node = $xml->addChild('Cname');

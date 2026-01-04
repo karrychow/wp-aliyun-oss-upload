@@ -75,11 +75,9 @@ class LiveChannelConfig implements XmlConfig
 
     public function serializeToXml()
     {
-        $strXml = <<<EOF
-<?xml version="1.0" encoding="utf-8"?>
-<LiveChannelConfiguration>
-</LiveChannelConfiguration>
-EOF;
+        $strXml = '<?xml version="1.0" encoding="utf-8"?>' . "\n" .
+                  '<LiveChannelConfiguration>' . "\n" .
+                  '</LiveChannelConfiguration>';
         $xml = new \SimpleXMLElement($strXml);
         if (isset($this->description)) {
             $xml->addChild('Description', $this->description);
@@ -111,7 +109,7 @@ EOF;
     {
         return $this->serializeToXml();
     }
-    
+
     private $description;
     private $status = "enabled";
     private $type;

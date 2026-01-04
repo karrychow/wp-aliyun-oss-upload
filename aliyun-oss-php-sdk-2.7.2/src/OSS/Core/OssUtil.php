@@ -42,7 +42,7 @@ class OssUtil
     }
 
     /**
-     * Html encoding '<', '>', '&', '\', '"' in subject parameter. 
+     * Html encoding '<', '>', '&', '\', '"' in subject parameter.
      *
      * @param string $subject
      * @return string
@@ -246,9 +246,7 @@ class OssUtil
         }
         $part_size = 1 * 1024 * 1024;
         $fp = fopen($filename, "w");
-        $characters = <<<BBB
-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-BBB;
+        $characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';";
 
         $charactersLength = strlen($characters);
         if ($fp) {
@@ -335,7 +333,7 @@ BBB;
 
     /**
      * Encodes the file path from GBK to UTF-8.
-     * The default encoding in Windows is GBK. 
+     * The default encoding in Windows is GBK.
      * And if the file path is in Chinese, the file would not be found without the transcoding to UTF-8.
      *
      * @param $file_path
@@ -381,27 +379,27 @@ BBB;
         if ($pos !== false) {
             $str = substr($str, $pos+3);
         }
-    
+
         $pos = strpos($str, '#');
         if ($pos !== false) {
             $str = substr($str, 0, $pos);
         }
-    
+
         $pos = strpos($str, '?');
         if ($pos !== false) {
             $str = substr($str, 0, $pos);
         }
-    
+
         $pos = strpos($str, '/');
         if ($pos !== false) {
             $str = substr($str, 0, $pos);
         }
-    
+
         $pos = strpos($str, '@');
         if ($pos !== false) {
             $str = substr($str, $pos+1);
         }
-       
+
         if (!preg_match('/^[\w.-]+(:[0-9]+)?$/', $str)) {
             throw new OssException("endpoint is invalid:" . $endpoint);
         }
