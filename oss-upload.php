@@ -6,6 +6,8 @@
  * Plugin URI: https://github.com/karrychow/wp-aliyun-oss-upload
  * Author: Karry
  * Author URI: https://github.com/karrychow
+ * License: GPL v2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: aliyun-oss-upload
  * Domain Path: /lang
  * Network: true
@@ -169,7 +171,6 @@ function oss_upload_privacy_exports_url($url){
 
 add_action('after_setup_theme', 'oss_upload_after_setup_theme', 11);
 function oss_upload_after_setup_theme(){
-    load_plugin_textdomain('oss-upload', false, 'oss-upload/lang');
     if(($width = ouops('oss_size_width')) && ($height = ouops('oss_size_height'))){
         add_theme_support('post-thumbnails');
         set_post_thumbnail_size(intval($width), intval($height), array('center', 'center'));
