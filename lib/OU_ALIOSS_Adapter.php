@@ -7,7 +7,7 @@ use OSS\Core\OssException;
 
 /**
  * Adapter for Aliyun OSS SDK v2.7.2 to replace the old OU_ALIOSS class.
- * Maintains backward compatibility for wp-aliyun-oss-upload.
+ * Maintains backward compatibility for aliyun-oss-upload.
  */
 class OU_ALIOSS {
     private $ossClient;
