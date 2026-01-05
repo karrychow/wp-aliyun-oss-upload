@@ -48,7 +48,7 @@ function oss_upload_dir_loader(){
 
 function oss_upload_check_handle(){
     if(!defined('OSS_ACCESS_ID')) return false;
-    $action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
+    $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : (isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '');
     return in_array($action, array('upload-plugin', 'upload-theme')) ? false : true;
 }
 
@@ -57,7 +57,7 @@ function oss_upload_encode($str){
 }
 
 function oss_upload_basename($file){
-    return basename(parse_url($file, PHP_URL_PATH));
+    return basename(wp_parse_url($file, PHP_URL_PATH));
 }
 
 function oss_upload_rename($name){
@@ -69,7 +69,8 @@ function oss_upload_rename($name){
 
 function oss_upload_webp(){
     if(!ouops('oss_webp') || wp_is_mobile()) return 0;
-    return isset($_SERVER['HTTP_ACCEPT']) && stripos($_SERVER['HTTP_ACCEPT'], '/webp') ? 1 : 0;
+    $http_accept = isset($_SERVER['HTTP_ACCEPT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_ACCEPT'])) : '';
+    return stripos($http_accept, '/webp') !== false ? 1 : 0;
 }
 
 function oss_upload_dir($param){
@@ -139,8 +140,8 @@ function oss_upload_handler($file, $errdel=true){
         if(isset($_SESSION['oss_upload_error'])) unset($_SESSION['oss_upload_error']);
         if($info->isOK()) return $upload['basedir'].'/'.$path;
     }catch(Exception $ex){
-        if($errdel && @file_exists($file)) @unlink($file);
-        $_SESSION['oss_upload_error'] = $file .'<br/>'. $ex->getMessage();
+        if($errdel && @file_exists($file)) wp_delete_file($file);
+        $_SESSION['oss_upload_error'] = esc_html($file) .'<br/>'. esc_html($ex->getMessage());
     }
     return false;
 }
@@ -289,7 +290,7 @@ function oss_upload_show_more($cols, $ret=false){
     $out = "{$head} column-{$cols}{$hide}'";
     if(!in_array($cols, $header)) $header[] = $cols;
     if($ret) return $out;
-    echo $out;
+    echo esc_attr($out);
 }
 
 add_filter('manage_settings_page_oss-upload_columns', 'oss_upload_setting_columns');
@@ -310,8 +311,9 @@ function oss_upload_link($url, $text='', $ext=''){
 
 add_action('wp_enqueue_scripts', 'oss_upload_enqueue', 9999);
 function oss_upload_enqueue(){
-    if(!ouops('oss_lazyload') || !isset($_SERVER['HTTP_USER_AGENT']) || stripos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) return;
-    wp_enqueue_script('jquery.lazyload', plugins_url('/lib/lazyload.js', __FILE__), array('jquery'), false, true);
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+    if(!ouops('oss_lazyload') || empty($user_agent) || stripos($user_agent, 'MSIE') !== false) return;
+    wp_enqueue_script('jquery.lazyload', plugins_url('/lib/lazyload.js', __FILE__), array('jquery'), '4.9.0', true);
 }
 
 function oss_upload_post_meta_boxes(){
@@ -324,7 +326,8 @@ function oss_upload_post_meta_boxes(){
 
 function oss_upload_post_action(){
     $post = __('Autosave remote images to OSS', 'aliyun-oss-upload');
-    echo "<div class=misc-pub-section><label><input name='oss_upload_remote_hidden' type='hidden' value='1' /><input name='oss_upload_remote' type='checkbox' value='1' ".checked(ouops('oss_remote'),1,0)." /> {$post}</label></div>";
+    wp_nonce_field('oss_upload_remote_action', 'oss_upload_remote_nonce');
+    echo '<div class="misc-pub-section"><label><input name="oss_upload_remote_hidden" type="hidden" value="1" /><input name="oss_upload_remote" type="checkbox" value="1" ' . checked(ouops('oss_remote'), 1, false) . ' /> ' . esc_html($post) . '</label></div>';
 }
 
 function oss_upload_post_save($content){
@@ -335,6 +338,11 @@ function oss_upload_post_save($content){
         if(empty($_POST['oss_upload_remote'])) return $content;
     }
     if(empty($post->ID) || !current_user_can('edit_post', $post->ID)) return $content;
+
+    // Verify nonce
+    if (!isset($_POST['oss_upload_remote_nonce']) || !wp_verify_nonce($_POST['oss_upload_remote_nonce'], 'oss_upload_remote_action')) {
+        return $content;
+    }
     $upload = wp_get_upload_dir();
     $default = substr($upload['default']['baseurl'], stripos($upload['default']['baseurl'], '//'));
     $baseurl = substr($upload['baseurl'], stripos($upload['baseurl'], '//'));
@@ -383,7 +391,7 @@ function oss_upload_post_save($content){
                     $name = oss_upload_rename($mxx ? wp_basename($mxx[0]) : oss_upload_basename($img));
                     $file_array = array('name' => $name, 'tmp_name' => $tmpfile);
                     $imgid = media_handle_sideload($file_array, $post->ID, $desc[0]);
-                    if(is_wp_error($imgid)) @unlink($tmpfile);
+                    if(is_wp_error($imgid)) wp_delete_file($tmpfile);
                 }
             }catch(Exception $ex){
                 $imgid = '';
@@ -408,7 +416,8 @@ function oss_upload_content_webp($content){
         return str_replace($ossurl, $localurl, $content);
     }
     if(!ouops('oss') || ouops('oss_service',10) || (!oss_upload_webp() && !ouops('oss_lazyload'))) return $content;
-    if(isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/msie|spider|bot/i', $_SERVER['HTTP_USER_AGENT'])) return $content;
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+    if(!empty($user_agent) && preg_match('/msie|spider|bot/i', $user_agent)) return $content;
     return preg_replace_callback('/<img.*?src="([^"]+)"/', function($mx){
         return str_replace($mx[1], oss_upload_auto_webp($mx[1], ouops('oss_lazyload')), $mx[0]);
     }, $content);
@@ -433,7 +442,7 @@ function oss_upload_generate_metadata($data, $id){
         $upload = wp_get_upload_dir();
         $file = get_attached_file($id, 1);//unfilter
         $local = str_replace($upload['basedir'], $upload['default']['basedir'], $file);
-        if(@file_exists($local)) @unlink($local);
+        if(@file_exists($local)) @wp_delete_file($local);
     }
     return $data;
 }
@@ -462,7 +471,7 @@ add_filter('wp_calculate_image_srcset', 'oss_upload_image_srcset', 9999, 5);
 function oss_upload_image_srcset($sources, $size, $image_src, $meta, $id){//wp_get_attachment_image_srcset
     if(!ouops('oss') || empty($meta['sizes']) || empty($sources)) return $sources;
     $upload = wp_get_upload_dir();
-    if(parse_url(admin_url(), PHP_URL_SCHEME) == 'https'){
+    if(wp_parse_url(admin_url(), PHP_URL_SCHEME) == 'https'){
         $upload['default']['baseurl'] = set_url_scheme($upload['default']['baseurl'], 'https');
     }
     foreach ($sources as $k => $v){
@@ -527,7 +536,8 @@ function oss_upload_attached_file($file, $id){
 
 function oss_upload_auto_webp($img, $lazyload=false){
     if(!ouops('oss') || ouops('oss_service',1) || ouops('oss_service',10)) return $img;
-    if(isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/spider|bot/i', $_SERVER['HTTP_USER_AGENT'])) return $img;
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+    if(!empty($user_agent) && preg_match('/spider|bot/i', $user_agent)) return $img;
     $upload = wp_get_upload_dir();
     $default = substr($upload['default']['baseurl'], stripos($upload['default']['baseurl'], '//'));
     $baseurl = substr($upload['baseurl'], stripos($upload['baseurl'], '//'));
@@ -562,10 +572,10 @@ function oss_upload_delete_thumbnail($id, $data=array()){
         if(empty($v['file'])) continue;
         if(oss_upload_basename($data['file']) == oss_upload_basename($v['file'])) continue;
         $file = $upload['basedir'].'/'.dirname($data['file']).'/'.oss_upload_basename($v['file']);
-        if(@file_exists($file) && @unlink($file)) $arr[] = $file;
+        if(@file_exists($file) && wp_delete_file($file)) $arr[] = $file;
         if(!empty($upload['default'])){
             $file = $upload['default']['basedir'].'/'.dirname($data['file']).'/'.oss_upload_basename($v['file']);
-            if(@file_exists($file) && @unlink($file)) $arr[] = $file;
+            if(@file_exists($file) && wp_delete_file($file)) $arr[] = $file;
         }
     }
     return $arr;
@@ -590,7 +600,7 @@ function oss_upload_delete_attachment($id){
         }
     }
     if(!empty($arr)) $arr = array_unique($arr);
-    foreach ($arr as $k) { if(@file_exists($k)) @unlink($k); }
+    foreach ($arr as $k) { if(@file_exists($k)) wp_delete_file($k); }
     oss_upload_delete_thumbnail($id);
 }
 
@@ -625,7 +635,7 @@ function oss_upload_setting_screen() {
         oss_upload_link('//promotion.aliyun.com/ntms/act/oss-discount.html?userCode=9ufcuiuf&utm_source=9ufcuiuf', __('OSS Discount <span>HOT</span>', 'aliyun-oss-upload'), 'button,blank').
         oss_upload_link('//wordpress.org/plugins/oss-upload/', __('Rating Stars', 'aliyun-oss-upload'), 'button,blank').
         oss_upload_link(oss_upload_data('PluginURI'), __('Support and Help', 'aliyun-oss-upload'), 'button,blank').
-        oss_upload_link('//www.imkarry.com/about', __('About Developer', 'aliyun-oss-upload'), 'button,blank').
+        oss_upload_link('//www.imkarry.com/about', __('About Developer', 'aliyun-oss-upload'), 'button,blank');
     $help_sidebar = '<p><strong>'.__('About', 'aliyun-oss-upload').'</strong></p>'.
         oss_upload_link('//oss.console.aliyun.com/index', __('Aliyun OSS', 'aliyun-oss-upload'), 'p,blank').
         oss_upload_link('//help.aliyun.com/document_detail/32174.html', __('OSS PHP SDK', 'aliyun-oss-upload'), 'p,blank');
@@ -648,6 +658,10 @@ function oss_upload_admin_enqueue($hook) {
         'confirmUpload' => __('This action would upload local storage directory to OSS, override if file exists, might take several minutes, comfirm to process?', 'aliyun-oss-upload'),
         'confirmSync' => __('This action would upload attachment from local storage that missing in OSS, might take several minutes, comfirm to process?', 'aliyun-oss-upload'),
         'confirmReset' => __('This action would regenerate metadata of all attachment in OSS, might take several minutes, comfirm to process?', 'aliyun-oss-upload'),
+        'nonceClean' => wp_create_nonce('oss_upload_action_clean'),
+        'nonceUpload' => wp_create_nonce('oss_upload_action_upload'),
+        'nonceSync' => wp_create_nonce('oss_upload_action_sync'),
+        'nonceReset' => wp_create_nonce('oss_upload_action_reset'),
     ));
 
     // Add inline style for metabox-prefs span
@@ -668,7 +682,7 @@ function oss_upload_admin_note(){
                 $try = file_get_contents($file);
                 if($try == $rnd){
                     $out .= __('Read OK, ', 'aliyun-oss-upload');
-                    $try = unlink($file);
+                    $try = wp_delete_file($file);
                     if($try === true){
                         $out .= __('Delete OK', 'aliyun-oss-upload');
                         $ok = true;
@@ -695,17 +709,24 @@ function oss_upload_admin_note(){
         }
     }
     if(isset($_SESSION['oss_upload_error'])){
-        echo '<div class="error"><p>' . esc_html($_SESSION['oss_upload_error']) . '</p></div>';
+        echo '<div class="error"><p>' . wp_kses_post($_SESSION['oss_upload_error']) . '</p></div>';
     }
 }
 
 function oss_upload_admin_action(){
-    if(!($action = $_GET['action']) || !is_super_admin()) return;
+    $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : '';
+    if(empty($action) || !is_super_admin()) return;
+
+    // Add nonce verification
+    if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'oss_upload_action_' . $action)) {
+        wp_die(esc_html__('Security check failed', 'aliyun-oss-upload'));
+    }
+
     if ( function_exists( 'set_time_limit' ) ) {
         @set_time_limit( 0 );
     }
     ob_end_clean();
-    echo str_pad('',1024);
+    echo esc_html(str_pad('',1024));
     echo '<title>' . esc_html__('Aliyun OSS Upload','aliyun-oss-upload') . '</title>';
     echo "<h1>" . esc_html__('Starting...', 'aliyun-oss-upload') . "</h1>\n";
     flush();
@@ -725,7 +746,7 @@ function oss_upload_admin_action(){
                 }
                 if($arr = oss_upload_delete_thumbnail($file->ID)){
                     foreach ($arr as $v){
-                        echo $index++.". {$v} {$postfix}<br/>\n";
+                        echo esc_html($index++) . ". " . esc_html($v) . " " . esc_html($postfix) . "<br/>\n";
                         flush();
                     }
                 }
@@ -736,8 +757,8 @@ function oss_upload_admin_action(){
                 if(empty($imgs)) continue;
                 foreach ($imgs as $img) {
                     if(preg_match('/\-[0-9]+x[0-9]+\./', $img) && file_is_valid_image($img)){
-                        if(@file_exists($img) && @unlink($img)){
-                            echo $index++.". {$img} {$postfix}<br/>\n";
+                        if(@file_exists($img) && wp_delete_file($img)){
+                            echo esc_html($index++) . ". " . esc_html($img) . " " . esc_html($postfix) . "<br/>\n";
                             flush();
                         }
                     }
@@ -750,7 +771,7 @@ function oss_upload_admin_action(){
                 echo esc_html__('Clean thumbnails done','aliyun-oss-upload');
             }
         }catch(Exception $ex){
-            echo $ex->getMessage();
+            echo esc_html($ex->getMessage());
         }
     }else if($action == 'upload'){
         $basedir = explode('/', substr($upload['basedir'].'/', 6), 2);
@@ -760,7 +781,7 @@ function oss_upload_admin_action(){
             echo '<br/><hr/>';
             echo esc_html__('Upload local storage to OSS done', 'aliyun-oss-upload');
         }catch(Exception $ex){
-            echo $ex->getMessage();
+            echo esc_html($ex->getMessage());
         }
     }else if($action == 'sync'){
         $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
@@ -769,7 +790,7 @@ function oss_upload_admin_action(){
             $oss = get_attached_file($file->ID);
             $local = str_replace($upload['basedir'], $upload['default']['basedir'], $oss);
             if(@file_exists($local) && !@file_exists($oss) && ($done = oss_upload_handler($local))){
-                echo $index++.". {$done} {$postfix}<br/>\n";
+                echo esc_html($index++) . ". " . esc_html($done) . " " . esc_html($postfix) . "<br/>\n";
                 flush();
             }
         }
@@ -791,7 +812,7 @@ function oss_upload_admin_action(){
             $img = get_attached_file($file->ID);
             $metadata = wp_generate_attachment_metadata($file->ID, $img);
             wp_update_attachment_metadata($file->ID, $metadata);
-            echo $index++.". {$file->ID} {$img} {$postfix}<br/>\n";
+            echo esc_html($index++) . ". " . esc_html($file->ID) . " " . esc_html($img) . " " . esc_html($postfix) . "<br/>\n";
             flush();
         }
         echo '<br/><hr/>';
@@ -806,7 +827,7 @@ function oss_upload_options_page(){
     ?>
     <div class="wrap">
         <h1><?php esc_html_e('Aliyun OSS Upload','aliyun-oss-upload')?>
-            <a class="page-title-action" href="<?php echo oss_upload_data('PluginURI');?>" target="_blank"><?php echo oss_upload_data('Version');?></a>
+            <a class="page-title-action" href="<?php echo esc_url(oss_upload_data('PluginURI'));?>" target="_blank"><?php echo esc_html(oss_upload_data('Version'));?></a>
         </h1>
         <form action="options.php" method="post">
         <?php settings_fields('oss_upload_admin_options_group'); ?>
@@ -820,20 +841,20 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Access Key','aliyun-oss-upload')?></th>
         <td>
-            <input type="text" name="ouop[oss_akey]" size="60" placeholder="Access Key" value="<?php echo ouops('oss_akey')?>" required />
-            <?php echo oss_upload_link('//ak-console.aliyun.com/', '?', 'blank'); ?>
+            <input type="text" name="ouop[oss_akey]" size="60" placeholder="Access Key" value="<?php echo esc_attr(ouops('oss_akey'))?>" required />
+            <?php echo wp_kses_post(oss_upload_link('//ak-console.aliyun.com/', '?', 'blank')); ?>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Secret Key','aliyun-oss-upload')?></th>
         <td>
-            <input type="password" name="ouop[oss_skey]" size="60" placeholder="Secret Key" value="<?php echo ouops('oss_skey')?>" required />
-            <?php echo oss_upload_link('//ak-console.aliyun.com/', '?', 'blank'); ?>
+            <input type="password" name="ouop[oss_skey]" size="60" placeholder="Secret Key" value="<?php echo esc_attr(ouops('oss_skey'))?>" required />
+            <?php echo wp_kses_post(oss_upload_link('//ak-console.aliyun.com/', '?', 'blank')); ?>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Upload Path','aliyun-oss-upload')?></th>
         <td>
-            <input type="url" name="ouop[oss_path]" size="60" placeholder="oss://{BUCKET}/{PATH}" value="<?php echo rtrim(ouops('oss_path'), '/');?>" required />
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank'); ?>
+            <input type="url" name="ouop[oss_path]" size="60" placeholder="oss://{BUCKET}/{PATH}" value="<?php echo esc_attr(rtrim(ouops('oss_path'), '/'));?>" required />
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank')); ?>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('<code>{BUCKET}</code> is Bucket name, <code>{PATH}</code> can be empty, with no slash at the end','aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>oss://my-bucket</code></small></p>
@@ -843,8 +864,8 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Visit URL','aliyun-oss-upload')?></th>
         <td>
-            <input type="url" name="ouop[oss_url]" size="60" placeholder="http://oss.aliyuncs.com/{BUCKET}/{PATH}" value="<?php echo rtrim(ouops('oss_url'), '/');?>" required />
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank'); ?>
+            <input type="url" name="ouop[oss_url]" size="60" placeholder="http://oss.aliyuncs.com/{BUCKET}/{PATH}" value="<?php echo esc_attr(rtrim(ouops('oss_url'), '/'));?>" required />
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/31902.html', '?', 'blank')); ?>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('<code>{BUCKET}</code> can be directory or domain, <code>{PATH}</code> can be empty','aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>http://my-bucket.oss-cn-shenzhen.aliyuncs.com</code></small></p>
@@ -857,8 +878,8 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Upload EndPoint','aliyun-oss-upload')?></th>
         <td>
-            <input type="text" name="ouop[oss_endpoint]" size="60" placeholder="oss-cn-hangzhou.aliyuncs.com" value="<?php echo ouops('oss_endpoint')?>" required />
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/31837.html', '?', 'blank'); ?>
+            <input type="text" name="ouop[oss_endpoint]" size="60" placeholder="oss-cn-hangzhou.aliyuncs.com" value="<?php echo esc_attr(ouops('oss_endpoint'))?>" required />
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/31837.html', '?', 'blank')); ?>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Endpoint of your Bucket, can be internal address if WEB SERVER is in the same area with OSS','aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>oss-cn-hangzhou.aliyuncs.com</code></small></p>
@@ -873,42 +894,42 @@ function oss_upload_options_page(){
         <td>
             <?php
             if(ouops('oss') && ouops('oss_akey') && ouops('oss_skey') && ouops('oss_endpoint')){
-                echo oss_upload_link('options-general.php?page=aliyun-oss-upload&settings-updated=test', __('Run a test', 'aliyun-oss-upload'), 'p,button');
+                echo wp_kses_post(oss_upload_link('options-general.php?page=aliyun-oss-upload&settings-updated=test', __('Run a test', 'aliyun-oss-upload'), 'p,button'));
             } ?>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Image Thumbnails','aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_service]" type="radio" value="0" <?php checked(ouops('oss_service'),0);?> /> <?php esc_html_e('Use Image Service via Parameter, default and simple','aliyun-oss-upload')?></label>
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/44688.html', '?', 'blank'); ?></p>
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/44688.html', '?', 'blank')); ?></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg?x-oss-process=image%2Fquality,q_<?php echo ouops('oss_quality') ? intval(ouops('oss_quality')) : '50'; ?>%2Fresize,m_fill,w_{width},h_{height}</code></small></p><br/>
             <p><label><input name="ouop[oss_service]" type="radio" value="1" <?php checked(ouops('oss_service'),1);?> /> <?php esc_html_e('Use Image Service via Style, powerful but require styles setting on OSS','aliyun-oss-upload')?></label>
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/44687.html', '?', 'blank'); ?></p>
-            <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg<?php echo ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'; ?>{style}</code>:
-            <?php foreach (get_intermediate_image_sizes() as $v){ echo '<code>'.$v.'</code> '; } ?>
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/44687.html', '?', 'blank')); ?></p>
+            <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg<?php echo esc_html(ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'); ?>{style}</code>:
+            <?php foreach (get_intermediate_image_sizes() as $v){ echo '<code>'.esc_html($v).'</code> '; } ?>
             </small></p><br/>
             <p><label><input name="ouop[oss_service]" type="radio" value="10" <?php checked(ouops('oss_service'),10);?> /> <?php esc_html_e('Use physical thumbnails, check this when having problem with theme','aliyun-oss-upload')?></label></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo-{width}x{height}.jpg</code></small></p><br/>
             <p><label><input name="ouop[oss_service]" type="radio" value="2" <?php checked(ouops('oss_service'),2);?> /> <?php esc_html_e('Disable image thumbnails','aliyun-oss-upload')?></label></p>
             <p <?php oss_upload_show_more('oss_upload_example'); ?>><small><code>photo.jpg</code></small></p><br/>
             <p><?php
-                echo oss_upload_link('options-media.php', __('Media Sizes Options', 'aliyun-oss-upload'), 'button');
-                echo oss_upload_link('?page=aliyun-oss-upload&action=clean', __('Clean Thumbnails', 'aliyun-oss-upload'), 'button,blank');
-                if(!ouops('oss_service',2)) echo oss_upload_link('?page=aliyun-oss-upload&action=reset', __('Regenerate Thumbnails', 'aliyun-oss-upload'), 'button,blank');
+                echo wp_kses_post(oss_upload_link('options-media.php', __('Media Sizes Options', 'aliyun-oss-upload'), 'button'));
+                echo wp_kses_post(oss_upload_link('?page=aliyun-oss-upload&action=clean', __('Clean Thumbnails', 'aliyun-oss-upload'), 'button,blank'));
+                if(!ouops('oss_service',2)) echo wp_kses_post(oss_upload_link('?page=aliyun-oss-upload&action=reset', __('Regenerate Thumbnails', 'aliyun-oss-upload'), 'button,blank'));
             ?></p>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Thumbnail Quality', 'aliyun-oss-upload')?></th>
         <td>
-            <p><label><input type="number" name="ouop[oss_quality]" size="10" min="1" max="99" placeholder="15" value="<?php echo ouops('oss_quality')?>" /></label></p>
+            <p><label><input type="number" name="ouop[oss_quality]" size="10" min="1" max="99" placeholder="15" value="<?php echo esc_attr(ouops('oss_quality'))?>" /></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Set the quality of thumbnail for OSS Image Servie to speed up image loading, the smaller the faster', 'aliyun-oss-upload');?>: <code>1 ~ 99</code></small></p>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Featured Image', 'aliyun-oss-upload')?></th>
         <td>
             <p><label>
-                <input type="text" name="ouop[oss_size_width]" size="10" value="<?php echo ouops('oss_size_width')?>" /> x
-                <input type="text" name="ouop[oss_size_height]" size="10" value="<?php echo ouops('oss_size_height')?>" />
+                <input type="text" name="ouop[oss_size_width]" size="10" value="<?php echo esc_attr(ouops('oss_size_width'))?>" /> x
+                <input type="text" name="ouop[oss_size_height]" size="10" value="<?php echo esc_attr(ouops('oss_size_height'))?>" />
             </label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Set the featured image dimensions when thumbnails enabled (width x height)', 'aliyun-oss-upload');?>: <code>800</code> x <code>450</code></small></p>
         </td></tr>
@@ -922,21 +943,21 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Style Separator', 'aliyun-oss-upload')?></th>
         <td>
-            <p><label><input type="text" name="ouop[oss_style_separator]" size="60" value="<?php echo ouops('oss_style_separator')?>" /> <?php echo oss_upload_link('//help.aliyun.com/document_detail/48884.html', '?', 'blank'); ?></label></p>
+            <p><label><input type="text" name="ouop[oss_style_separator]" size="60" value="<?php echo esc_attr(ouops('oss_style_separator'))?>" /> <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/48884.html', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Custom style separator for OSS Image Service style','aliyun-oss-upload')?>: <code>?x-oss-process=style%2F</code> <code>-</code> <code>_</code> <code>!</code></small></p>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Fullsize Style', 'aliyun-oss-upload')?></th>
         <td>
-            <p><label><input type="text" name="ouop[oss_fullsize_style]" size="60" value="<?php echo ouops('oss_fullsize_style')?>" />
-            <?php echo oss_upload_link('//help.aliyun.com/document_detail/44686.html', '?', 'blank'); ?></label></p>
+            <p><label><input type="text" name="ouop[oss_fullsize_style]" size="60" value="<?php echo esc_attr(ouops('oss_fullsize_style'))?>" />
+            <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/44686.html', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Default full size image style for OSS Image Service','aliyun-oss-upload')?>: <code>full</code></small></p>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('GIF Style', 'aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_gif]" type="checkbox" value="1" <?php checked(ouops('oss_gif'),1);?> />
-            <?php esc_html_e('Using special OSS Image Service style for <code>GIF</code> format','aliyun-oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44957.html', '?', 'blank'); ?></label></p>
+            <?php esc_html_e('Using special OSS Image Service style for <code>GIF</code> format','aliyun-oss-upload')?> <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/44957.html', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Check this to skip style for GIF image if having no animation effect','aliyun-oss-upload')?>
             </small></p>
         </td></tr>
@@ -944,7 +965,7 @@ function oss_upload_options_page(){
         <th scope="row"><?php esc_html_e('Auto Compress', 'aliyun-oss-upload')?></th>
         <td>
             <p><label><input name="ouop[oss_webp]" type="checkbox" value="1" <?php checked(ouops('oss_webp'),1);?> />
-            <?php esc_html_e('Compress as <code>WebP</code> format automatically if browser support','aliyun-oss-upload')?> <?php echo oss_upload_link('//help.aliyun.com/document_detail/44703.html', '?', 'blank'); ?></label></p>
+            <?php esc_html_e('Compress as <code>WebP</code> format automatically if browser support','aliyun-oss-upload')?> <?php echo wp_kses_post(oss_upload_link('//help.aliyun.com/document_detail/44703.html', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Choose webp format on OSS if using styles for Image Service','aliyun-oss-upload')?></small></p>
         </td></tr>
         <tr valign="top">
@@ -952,17 +973,17 @@ function oss_upload_options_page(){
         <td>
             <p><label><input name="ouop[oss_lazyload]" type="checkbox" value="1" <?php checked(ouops('oss_lazyload'),1);?> />
             <?php esc_html_e('Delay loading of images in long web pages','aliyun-oss-upload')?>
-            <?php echo oss_upload_link('//plugins.jquery.com/lazyload/', '?', 'blank'); ?></label></p>
+            <?php echo wp_kses_post(oss_upload_link('//plugins.jquery.com/lazyload/', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Images outside of viewport wont be loaded before user scrolls to them','aliyun-oss-upload')?></small></p>
         </td></tr>
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Lazyload URL', 'aliyun-oss-upload')?></th>
         <td>
-            <p><label><input type="text" name="ouop[oss_lazyurl]" size="60" value="<?php echo ouops('oss_lazyurl')?>" /></label></p>
+            <p><label><input type="text" name="ouop[oss_lazyurl]" size="60" value="<?php echo esc_attr(ouops('oss_lazyurl'))?>" /></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Default image url for lazyload, could be with Image Service suffix, or base64 data, or normal url. <code>{IMG}</code> means original','aliyun-oss-upload')?></small></p>
             <div <?php oss_upload_show_more('oss_upload_example'); ?>>
             <p><small><code>{IMG}?x-oss-process=image%2Fquality,q_10%2Fresize,m_lfit,w_20</code></small></p>
-            <p><small><code>{IMG}<?php echo ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'; ?>lazyload-style</code></small></p>
+            <p><small><code>{IMG}<?php echo esc_html(ouops('oss_style_separator') ? trim(ouops('oss_style_separator')) : '?x-oss-process=style%2F'); ?>lazyload-style</code></small></p>
             <p><small><code>data:image/gif;base64,R0lGODdhAQABAPAAAMPDwwAAACwAAAAAAQABAAACAkQBADs=</code></small></p>
             <p><small><code>//img.domain.com/xxx/lazyload.png</code></small></p>
             </div>
@@ -970,8 +991,8 @@ function oss_upload_options_page(){
         <tr valign="top">
         <th scope="row"><?php esc_html_e('Upload Mimes', 'aliyun-oss-upload')?></th>
         <td>
-            <p><label><input type="text" name="ouop[upload_mimes]" size="60" value="<?php echo ouops('upload_mimes')?>" />
-                <?php echo oss_upload_link('//codex.wordpress.org/Function_Reference/get_allowed_mime_types', '?', 'blank'); ?></label></p>
+            <p><label><input type="text" name="ouop[upload_mimes]" size="60" value="<?php echo esc_attr(ouops('upload_mimes'))?>" />
+                <?php echo wp_kses_post(oss_upload_link('//codex.wordpress.org/Function_Reference/get_allowed_mime_types', '?', 'blank')); ?></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Add file extensions and mime types to the allowed upload list','aliyun-oss-upload')?>: <code>flac=audio/x-flac,py=text/x-python</code></small></p>
         </td></tr>
         <tr valign="top">
@@ -985,8 +1006,8 @@ function oss_upload_options_page(){
         <td>
             <p><label><input name="ouop[oss_url_back]" type="checkbox" value="1" <?php checked(ouops('oss_url_back'),1);?> />
             <?php esc_html_e('Auto relocate attachments in past posts when OSS disabled','aliyun-oss-upload')?></label></p><br/>
-            <p><label><input type="text" name="ouop[oss_url_find]" size="60" value="<?php echo ouops('oss_url_find')?>" /></label></p>
-            <p><label><input type="text" name="ouop[oss_url_replace]" size="60" value="<?php echo ouops('oss_url_replace')?>" /></label></p>
+            <p><label><input type="text" name="ouop[oss_url_find]" size="60" value="<?php echo esc_attr(ouops('oss_url_find'))?>" /></label></p>
+            <p><label><input type="text" name="ouop[oss_url_replace]" size="60" value="<?php echo esc_attr(ouops('oss_url_replace'))?>" /></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Find and replace whatever strings you want to fix the attachment url','aliyun-oss-upload')?>: <code>http,upload</code> <code>https,uploads</code></small></p>
         </td></tr>
         <tr valign="top">
@@ -996,8 +1017,8 @@ function oss_upload_options_page(){
             <?php esc_html_e('Enable remote images autosave when edit post/page','aliyun-oss-upload')?></label></p><br/>
             <p><label><input name="ouop[oss_upload_remote]" type="checkbox" value="1" <?php checked(ouops('oss_upload_remote'),1);?> />
             <?php esc_html_e('Enable remote images autosave when import post/page','aliyun-oss-upload')?></label></p><br/>
-            <p><label><input type="text" name="ouop[oss_remote_white]" size="60" value="<?php echo ouops('oss_remote_white')?>" /></label></p>
-            <p><label><input type="text" name="ouop[oss_remote_black]" size="60" value="<?php echo ouops('oss_remote_black')?>" /></label></p>
+            <p><label><input type="text" name="ouop[oss_remote_white]" size="60" value="<?php echo esc_attr(ouops('oss_remote_white'))?>" /></label></p>
+            <p><label><input type="text" name="ouop[oss_remote_black]" size="60" value="<?php echo esc_attr(ouops('oss_remote_black'))?>" /></label></p>
             <p <?php oss_upload_show_more('oss_upload_desc'); ?>><small><?php esc_html_e('Whitelist / Blacklist rules for remote images autosave','aliyun-oss-upload')?>: <code>jianshu.io</code> <code>noimg.com,icon.com</code></small></p>
         </td></tr>
         <tr valign="top">
@@ -1010,8 +1031,8 @@ function oss_upload_options_page(){
             ?>
             </code></small></label></p><br />
             <?php
-                echo oss_upload_link('?page=aliyun-oss-upload&action=sync', __('Upload Missing Attachment', 'aliyun-oss-upload'), 'button,blank');
-                echo oss_upload_link('?page=aliyun-oss-upload&action=upload', __('Upload Whole Local Storage', 'aliyun-oss-upload'), 'button,blank');
+                echo wp_kses_post(oss_upload_link('?page=aliyun-oss-upload&action=sync', __('Upload Missing Attachment', 'aliyun-oss-upload'), 'button,blank'));
+                echo wp_kses_post(oss_upload_link('?page=aliyun-oss-upload&action=upload', __('Upload Whole Local Storage', 'aliyun-oss-upload'), 'button,blank'));
             ?>
         </td></tr>
         </table>

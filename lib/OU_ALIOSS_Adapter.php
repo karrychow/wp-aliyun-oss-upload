@@ -75,10 +75,10 @@ class OU_ALIOSS {
 
     public function create_mtu_object_by_dir($bucket, $dir, $recursive = false, $exclude = ".|..|.svn|.git", $options = null) {
         // Re-implementing specific logic from old OSS.php for directory upload
-        if (!is_dir($dir)) throw new Exception("$dir is not a directory.");
+        if (!is_dir($dir)) throw new Exception(esc_html("$dir is not a directory."));
 
         $files = $this->read_dir($dir, $exclude, $recursive);
-        if (empty($files)) throw new Exception("$dir is empty.");
+        if (empty($files)) throw new Exception(esc_html("$dir is empty."));
 
         // We mimic the echo output of the old function because the admin page relies on it (AJAX or iframe output)
         $index = 1;
@@ -98,9 +98,9 @@ class OU_ALIOSS {
 
         // Replicating basic loop
         foreach ($files as $item) {
-             echo $index++ . ". " . $item['path'] . " - ";
+             echo esc_html($index++) . ". " . esc_html($item['path']) . " - ";
              if (is_dir($item['path'])) {
-                 echo "Ignored directory.<br/>\n";
+                 echo esc_html("Ignored directory.") . "<br/>\n";
                  flush();
                  continue;
              }
@@ -117,9 +117,9 @@ class OU_ALIOSS {
              try {
                 // Check existence logic skipped for brevity, implementing upload
                  $client->multiuploadFile($bucket, $objectKey, $item['path']);
-                 echo "<font color=green>Upload Success.</font><br/>\n";
+                 echo "<font color=green>" . esc_html("Upload Success.") . "</font><br/>\n";
              } catch (Exception $e) {
-                 echo "<font color=red>Upload Failed: ". $e->getMessage() ."</font><br/>\n";
+                 echo "<font color=red>" . esc_html("Upload Failed: " . $e->getMessage()) . "</font><br/>\n";
              }
              flush();
         }

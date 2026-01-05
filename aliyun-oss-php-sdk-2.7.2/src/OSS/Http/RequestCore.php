@@ -14,6 +14,7 @@ namespace OSS\Http;
  */
 class RequestCore
 {
+    // phpcs:disable WordPress.WP.AlternativeFunctions
     /**
      * The URL being requested.
      */
@@ -23,7 +24,7 @@ class RequestCore
      * The headers being sent in the request.
      */
     public $request_headers;
-   
+
     /**
      * The raw response callback headers
      */
@@ -37,7 +38,7 @@ class RequestCore
     /**
      *The hander of write file
      */
-    public $write_file_handle; 
+    public $write_file_handle;
 
     /**
      * The body being sent in the request.
@@ -459,7 +460,7 @@ class RequestCore
      */
     public function set_proxy($proxy)
     {
-        $proxy = parse_url($proxy);
+        $proxy = wp_parse_url($proxy);
         $proxy['user'] = isset($proxy['user']) ? $proxy['user'] : null;
         $proxy['pass'] = isset($proxy['pass']) ? $proxy['pass'] : null;
         $proxy['port'] = isset($proxy['port']) ? $proxy['port'] : null;
@@ -498,9 +499,9 @@ class RequestCore
         }
 
         $this->response_raw_headers .= $header_content;
-        return strlen($header_content); 
+        return strlen($header_content);
     }
-        
+
 
     /**
      * Register a callback function to execute whenever a data stream is read from using
@@ -601,7 +602,7 @@ class RequestCore
     public function streaming_write_callback($curl_handle, $data)
     {
         $code = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
-        
+
         if (intval($code) / 100 != 2)
         {
             $this->response_error_body .= $data;
@@ -611,7 +612,7 @@ class RequestCore
         $length = strlen($data);
         $written_total = 0;
         $written_last = 0;
-        
+
         while ($written_total < $length) {
             $written_last = fwrite($this->write_stream, substr($data, $written_total));
 
@@ -796,7 +797,7 @@ class RequestCore
             $this->response_body = substr($this->response, $header_size);
             $this->response_code = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
             $this->response_info = curl_getinfo($curl_handle);
-            
+
             if (intval($this->response_code) / 100 != 2 && isset($this->write_file))
             {
                 $this->response_headers = $this->response_raw_headers;
@@ -820,7 +821,7 @@ class RequestCore
             $this->response_headers = $header_assoc;
             $this->response_headers['info'] = $this->response_info;
             $this->response_headers['info']['method'] = $this->method;
-            
+
             if ($curl_handle && $response) {
                 return new ResponseCore($this->response_headers, $this->response_body, $this->response_code);
             }
@@ -844,7 +845,7 @@ class RequestCore
         $this->response = curl_exec($curl_handle);
 
         if ($this->response === false) {
-            throw new RequestCore_Exception('cURL error: ' . curl_error($curl_handle) . ' (' . curl_errno($curl_handle) . ')');
+            throw new RequestCore_Exception('cURL error: ' . esc_html(curl_error($curl_handle)) . ' (' . esc_html(curl_errno($curl_handle)) . ')');
         }
 
         $parsed_response = $this->process_response($curl_handle, $this->response);

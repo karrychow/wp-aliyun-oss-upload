@@ -41,7 +41,7 @@ class CorsConfig implements XmlConfig
     public function addRule($rule)
     {
         if (count($this->rules) >= self::OSS_MAX_RULES) {
-            throw new OssException("num of rules in the config exceeds self::OSS_MAX_RULES: " . strval(self::OSS_MAX_RULES));
+            throw new OssException(esc_html("num of rules in the config exceeds self::OSS_MAX_RULES: " . strval(self::OSS_MAX_RULES)));
         }
         $this->rules[] = $rule;
     }

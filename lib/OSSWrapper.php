@@ -85,7 +85,7 @@ final class OSSWrapper extends OU_ALIOSS {
 
 	public function rename($path, $to) {
 		self::__getURL($path);
-        $tourl = parse_url($to);
+        $tourl = wp_parse_url($to);
         $tourl['path'] = isset($tourl['path']) ? $this->safeSubstr($tourl['path'], 1) : '';
         // Host might be different? Assuming same bucket for simplicity or parsing $to correctly.
         // If $to is oss://bucket/path
@@ -334,7 +334,7 @@ final class OSSWrapper extends OU_ALIOSS {
 	}
 
     private function __getURL($path) {
-        $this->url = parse_url($path);
+        $this->url = wp_parse_url($path);
         if(!isset($this->url['scheme']) || $this->url['scheme'] !== 'oss') return $this->url;
 
         // This calls the OU_ALIOSS_Adapter's setAuth, ensuring we use defined constants.

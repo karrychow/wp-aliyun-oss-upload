@@ -22,7 +22,7 @@ class SignerV1 implements SignerInterface
         $method = strtoupper($request->method);
         $date = $headers['Date'];
         $resourcePath = $this->getResourcePath($options);
-        $queryString = parse_url($request->request_url, PHP_URL_QUERY);
+        $queryString = wp_parse_url($request->request_url, PHP_URL_QUERY);
         $query = array();
         if ($queryString !== null) {
             parse_str($queryString, $query);
@@ -42,7 +42,7 @@ class SignerV1 implements SignerInterface
         if (!isset($request->request_headers['Date'])) {
             $request->add_header('Date', gmdate('D, d M Y H:i:s \G\M\T'));
         }
-        $parsed_url = parse_url($request->request_url);
+        $parsed_url = wp_parse_url($request->request_url);
         $queryString = isset($parsed_url['query']) ? $parsed_url['query'] : '';
         $query = array();
         if ($queryString !== null) {

@@ -2,13 +2,15 @@
 
 Contributors: Karry, xiaomac
 Donate link: https://github.com/karrychow/wp-aliyun-oss-upload
-Tags: aliyun, oss, upload, media, files, storage, cloud, 阿里云, 媒体库, 图片, 上传, 云存储
+Tags: aliyun, oss, upload, media, storage
 Requires at least: 5.0
 Tested up to: 6.9
 Stable tag: 4.9.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Upload WordPress media files to Aliyun OSS with native image editing support and automatic remote image handling.
 
 == Description ==
 

@@ -37,7 +37,7 @@ class SignerV4 implements SignerInterface
         $scope = $this->buildScope($date, $region, $product);
         $resourcePath = $this->getResourcePath($options);
         $additionalHeaders = $this->getCommonAdditionalHeaders($request, $options);
-        $queryString = parse_url($request->request_url, PHP_URL_QUERY);
+        $queryString = wp_parse_url($request->request_url, PHP_URL_QUERY);
         $query = array();
         if ($queryString !== null) {
             parse_str($queryString, $query);
@@ -77,7 +77,7 @@ class SignerV4 implements SignerInterface
         $scope = $this->buildScope($date, $region, $product);
         $resourcePath = $this->getResourcePath($options);
         $additionalHeaders = $this->getCommonAdditionalHeaders($request, $options);
-        $queryString = parse_url($request->request_url, PHP_URL_QUERY);
+        $queryString = wp_parse_url($request->request_url, PHP_URL_QUERY);
         $query = array();
         if ($queryString !== null) {
             parse_str($queryString, $query);

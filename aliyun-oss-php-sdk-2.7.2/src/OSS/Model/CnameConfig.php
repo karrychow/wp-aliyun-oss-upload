@@ -53,7 +53,7 @@ class CnameConfig implements XmlConfig
     {
         if (count($this->cnameList) >= self::OSS_MAX_RULES) {
             throw new OssException(
-                "num of cname in the config exceeds self::OSS_MAX_RULES: " . strval(self::OSS_MAX_RULES));
+                esc_html("num of cname in the config exceeds self::OSS_MAX_RULES: " . strval(self::OSS_MAX_RULES)));
         }
         $this->cnameList[] = array('Domain' => $cname);
     }

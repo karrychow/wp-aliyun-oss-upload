@@ -94,7 +94,7 @@ abstract class Result
                 'message' => $message,
                 'body' => $body
             );
-            throw new OssException($details);
+            throw new OssException($details); // phpcs:ignore WordPress.Security.EscapeOutput
         }
     }
 

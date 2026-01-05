@@ -1889,7 +1889,7 @@ class OssClient
         OssUtil::throwOssExceptionWithMessageIfEmpty($file, "file path is invalid");
         $file = $this->encodeFilePath($file);
         if (!file_exists($file)) {
-            throw new OssException($file . " file does not exist");
+            throw new OssException(esc_html($file) . " file does not exist");
         }
         $options[self::OSS_FILE_UPLOAD] = $file;
         $file_size = sprintf('%u', filesize($options[self::OSS_FILE_UPLOAD]));
@@ -2007,7 +2007,7 @@ class OssClient
         OssUtil::throwOssExceptionWithMessageIfEmpty($file, "file path is invalid");
         $file = $this->encodeFilePath($file);
         if (!file_exists($file)) {
-            throw new OssException($file . " file does not exist");
+            throw new OssException(esc_html($file) . " file does not exist");
         }
         $options[self::OSS_FILE_UPLOAD] = $file;
         $file_size = sprintf('%u', filesize($options[self::OSS_FILE_UPLOAD]));
@@ -2773,12 +2773,12 @@ class OssClient
         $directory = $this->encodeFilePath($directory);
         //If it's not the local directory, throw OSSException.
         if (!is_dir($directory)) {
-            throw new OssException('parameter error: ' . $directory . ' is not a directory, please check it');
+            throw new OssException('parameter error: ' . esc_html($directory) . ' is not a directory, please check it');
         }
         //read directory
         $file_list_array = OssUtil::readDir($directory, $exclude, $recursive);
         if (!$file_list_array) {
-            throw new OssException($directory . ' is empty...');
+            throw new OssException(esc_html($directory) . ' is empty...');
         }
         foreach ($file_list_array as $k => $item) {
             if (is_dir($item['path'])) {
@@ -2902,7 +2902,7 @@ class OssClient
     {
         OssUtil::throwOssExceptionWithMessageIfEmpty($bucket, $errMsg);
         if (!OssUtil::validateBucket($bucket)) {
-            throw new OssException('"' . $bucket . '"' . 'bucket name is invalid');
+            throw new OssException('"' . esc_html($bucket) . '"' . 'bucket name is invalid');
         }
     }
 
@@ -2916,7 +2916,7 @@ class OssClient
     {
         OssUtil::throwOssExceptionWithMessageIfEmpty($object, "object name is empty");
         if (!OssUtil::validateObject($object)) {
-            throw new OssException('"' . $object . '"' . ' object name is invalid');
+            throw new OssException('"' . esc_html($object) . '"' . ' object name is invalid');
         }
     }
 
@@ -2931,7 +2931,7 @@ class OssClient
         $this->precheckObject($object);
         if ($strict) {
             if (is_string($object) && $object[0] === "?") {
-                throw new OssException('"' . $object . '"' . ' object name cannot start with `?`');
+                throw new OssException('"' . esc_html($object) . '"' . ' object name cannot start with `?`');
             }
         }
     }
@@ -2989,7 +2989,7 @@ class OssClient
     private function precheckParam($options, $param, $funcName)
     {
         if (!isset($options[$param])) {
-            throw new OssException('The `' . $param . '` options is required in ' . $funcName . '().');
+            throw new OssException('The `' . esc_html($param) . '` options is required in ' . esc_html($funcName) . '().');
         }
     }
 
@@ -3299,7 +3299,7 @@ class OssClient
     {
         if (isset($options[self::OSS_HEADERS][self::OSS_ACL]) && !empty($options[self::OSS_HEADERS][self::OSS_ACL])) {
             if (!in_array(strtolower($options[self::OSS_HEADERS][self::OSS_ACL]), self::$OSS_ACL_TYPES)) {
-                throw new OssException($options[self::OSS_HEADERS][self::OSS_ACL] . ':' . 'acl is invalid(private,public-read,public-read-write)');
+                throw new OssException(esc_html($options[self::OSS_HEADERS][self::OSS_ACL]) . ':' . 'acl is invalid(private,public-read,public-read-write)');
             }
         }
     }
@@ -3594,7 +3594,7 @@ class OssClient
             if ($extensions) {
                 foreach ($enabled_extension as $item) {
                     if (!in_array($item, $extensions)) {
-                        throw new OssException("Extension {" . $item . "} is not installed or not enabled, please check your php env.");
+                        throw new OssException("Extension {" . esc_html($item) . "} is not installed or not enabled, please check your php env.");
                     }
                 }
             } else {

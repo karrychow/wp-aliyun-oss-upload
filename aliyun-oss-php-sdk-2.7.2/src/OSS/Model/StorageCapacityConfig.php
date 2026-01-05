@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 namespace OSS\Model;
 
@@ -15,7 +18,7 @@ class StorageCapacityConfig implements XmlConfig
     /**
      * StorageCapacityConfig constructor.
      *
-     * @param int $storageCapacity            
+     * @param int $storageCapacity
      */
     public function __construct($storageCapacity)
     {
@@ -55,7 +58,7 @@ class StorageCapacityConfig implements XmlConfig
     /**
      * Set storage capacity
      *
-     * @param int $storageCapacity            
+     * @param int $storageCapacity
      */
     public function setStorageCapacity($storageCapacity)
     {
@@ -64,7 +67,7 @@ class StorageCapacityConfig implements XmlConfig
 
     /**
      * Get storage capacity
-     * 
+     *
      * @return int
      */
     public function getStorageCapacity()

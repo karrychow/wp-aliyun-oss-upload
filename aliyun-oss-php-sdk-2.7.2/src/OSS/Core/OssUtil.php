@@ -198,7 +198,7 @@ class OssUtil
     {
         //$options
         if ($options != NULL && !is_array($options)) {
-            throw new OssException ($options . ':' . 'option must be array');
+            throw new OssException (esc_html($options) . ':' . 'option must be array');
         }
     }
 
@@ -228,7 +228,7 @@ class OssUtil
         if (empty($name)) {
             if (is_string($name) && $name == '0')
                 return;
-            throw new OssException($errMsg);
+            throw new OssException(esc_html($errMsg));
         }
     }
 
@@ -241,11 +241,11 @@ class OssUtil
     public static function generateFile($filename, $size)
     {
         if (file_exists($filename) && $size == sprintf('%u',filesize($filename))) {
-            echo $filename . " already exists, no need to create again. ";
+            echo esc_html($filename) . " already exists, no need to create again. ";
             return;
         }
         $part_size = 1 * 1024 * 1024;
-        $fp = fopen($filename, "w");
+        $fp = fopen($filename, "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         $characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';";
 
         $charactersLength = strlen($characters);
@@ -257,18 +257,18 @@ class OssUtil
                     $write_size = $part_size;
                 }
                 $size -= $write_size;
-                $a = $characters[rand(0, $charactersLength - 1)];
+                $a = $characters[wp_rand(0, $charactersLength - 1)];
                 $content = str_repeat($a, $write_size);
-                $flag = fwrite($fp, $content);
+                $flag = fwrite($fp, $content); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 if (!$flag) {
-                    echo "write to " . $filename . " failed. <br>";
+                    echo "write to " . esc_html($filename) . " failed. <br>";
                     break;
                 }
             }
         } else {
-            echo "open " . $filename . " failed. <br>";
+            echo "open " . esc_html($filename) . " failed. <br>";
         }
-        fclose($fp);
+        fclose($fp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
     }
 
     /**
@@ -297,7 +297,7 @@ class OssUtil
             return $content_md5;
         }
 
-        if (false === $fh = fopen($filename, 'rb')) {
+        if (false === $fh = fopen($filename, 'rb')) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
             return $content_md5;
         }
 
@@ -312,11 +312,11 @@ class OssUtil
             if ($read_length <= 0) {
                 break;
             } else {
-                $data .= fread($fh, $read_length);
+                $data .= fread($fh, $read_length); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
                 $left_length = $left_length - $read_length;
             }
         }
-        fclose($fh);
+        fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
         $content_md5 = base64_encode(md5($data, true));
         return $content_md5;
     }
@@ -401,7 +401,7 @@ class OssUtil
         }
 
         if (!preg_match('/^[\w.-]+(:[0-9]+)?$/', $str)) {
-            throw new OssException("endpoint is invalid:" . $endpoint);
+            throw new OssException("endpoint is invalid:" . esc_html($endpoint));
         }
 
         return $str;
@@ -493,8 +493,8 @@ class OssUtil
                     }
                 }
             }
-        } else if ($handle = opendir($dir)) {
-            while (false !== ($file = readdir($handle))) {
+        } else if ($handle = opendir($dir)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_directory_opendir
+            while (false !== ($file = readdir($handle))) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_directory_readdir
                 if (!in_array(strtolower($file), $exclude_array)) {
                     $new_file = $dir . '/' . $file;
                     $object = $file;
@@ -505,7 +505,7 @@ class OssUtil
                     }
                 }
             }
-            closedir($handle);
+            closedir($handle); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_directory_closedir
         }
         return $file_list_array;
     }
@@ -526,7 +526,7 @@ class OssUtil
         if ($encoding == "url") {
             return rawurldecode($key);
         } else {
-            throw new OssException("Unrecognized encoding type: " . $encoding);
+            throw new OssException("Unrecognized encoding type: " . esc_html($encoding));
         }
     }
 
