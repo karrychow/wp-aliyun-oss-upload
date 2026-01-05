@@ -150,10 +150,12 @@ class OU_ALIOSS {
     }
 
     public function create_mtu_object_by_dir($bucket, $dir, $recursive = false, $exclude = ".|..|.svn|.git", $options = null) {
-        if (!is_dir($dir)) throw new Exception(sprintf(__('%s is not a directory.', 'aliyun-oss-upload'), esc_html($dir)));
+        /* translators: %s: directory path */
+        if (!is_dir($dir)) throw new Exception(sprintf(esc_html__('%s is not a directory.', 'aliyun-oss-upload'), esc_html($dir)));
 
         $files = $this->read_dir($dir, $exclude, $recursive);
-        if (empty($files)) throw new Exception(sprintf(__('%s is empty.', 'aliyun-oss-upload'), esc_html($dir)));
+        /* translators: %s: directory path */
+        if (empty($files)) throw new Exception(sprintf(esc_html__('%s is empty.', 'aliyun-oss-upload'), esc_html($dir)));
 
         $index = 1;
         $client = $this->getClient();

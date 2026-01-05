@@ -48,7 +48,7 @@ function oss_upload_dir_loader(){
 
 function oss_upload_check_handle(){
     if(!defined('OSS_ACCESS_ID')) return false;
-    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- This function only checks action type, nonce verification is handled in oss_upload_admin_action()
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- This function only checks action type, nonce verification is handled in oss_upload_admin_action()
     $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : (isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '');
     return in_array($action, array('upload-plugin', 'upload-theme')) ? false : true;
 }
@@ -194,8 +194,7 @@ function oss_upload_admin_init() {
     ));
     if(!ouops('oss')) return;
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if (isset($_GET['page'], $_GET['action']) && 
-        sanitize_text_field(wp_unslash($_GET['page'])) === 'oss-upload') {
+    if (isset($_GET['page'], $_GET['action']) && sanitize_text_field(wp_unslash($_GET['page'])) === 'oss-upload') {
         oss_upload_admin_action();
     }
     if(ouops('oss_hd_thumbnail')) add_filter('big_image_size_threshold', '__return_false');
