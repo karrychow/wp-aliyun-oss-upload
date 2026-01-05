@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if (!function_exists('oss_substr')) {
     function oss_substr($string, $start, $length = null) {

@@ -13,6 +13,10 @@
  * Network: true
 */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_action('init', 'oss_upload_init', 1);
 function oss_upload_init(){
     if(!ouops('oss') || !ouops('oss_akey') || !ouops('oss_skey') || !ouops('oss_endpoint') || !ouops('oss_path')) return;
@@ -127,7 +131,9 @@ function oss_upload_handler($file, $errdel=true){
     $basedir = explode('/', substr($upload['basedir'].'/', 6), 2);
     $path = str_replace($upload['default']['basedir'].'/', '', $file);
     try{
-        @set_time_limit(0);
+        if ( function_exists( 'set_time_limit' ) ) {
+            @set_time_limit( 0 );
+        }
         $ossw = new OU_ALIOSS;
         $info = $ossw->create_mpu_object($basedir[0], $basedir[1].$path, array('fileUpload'=>$file));
         if(isset($_SESSION['oss_upload_error'])) unset($_SESSION['oss_upload_error']);
@@ -339,7 +345,9 @@ function oss_upload_post_save($content){
     $black = ouops('oss_remote_black') ? explode(',', trim(ouops('oss_remote_black'))) : false;
     $check = preg_match_all('/<img.*?(?<=data-src|data-original|data-original-src)="(.*?)"[^>]+>/', $content, $mx);
     if($check || preg_match_all('/<img.*? src="(.*?)"[^>]+>/', $content, $mx)){
-        @set_time_limit(0);
+        if ( function_exists( 'set_time_limit' ) ) {
+            @set_time_limit( 0 );
+        }
         add_filter('http_request_args', 'oss_upload_request_unsafe', 11, 2);//for unsafe-image url
         $mxIndex = -1;
         foreach($mx[1] as $img){
@@ -693,7 +701,9 @@ function oss_upload_admin_note(){
 
 function oss_upload_admin_action(){
     if(!($action = $_GET['action']) || !is_super_admin()) return;
-    @set_time_limit(0);
+    if ( function_exists( 'set_time_limit' ) ) {
+        @set_time_limit( 0 );
+    }
     ob_end_clean();
     echo str_pad('',1024);
     echo '<title>' . esc_html__('Aliyun OSS Upload','aliyun-oss-upload') . '</title>';
@@ -770,7 +780,10 @@ function oss_upload_admin_action(){
             echo esc_html__('Sync missing attachments to OSS done','aliyun-oss-upload');
         }
     }else if($action == 'reset'){
-        @ini_set('memory_limit','2048M');
+        // Only increase memory if absolutely necessary and not globally
+        if ( function_exists( 'ini_set' ) ) {
+            @ini_set( 'memory_limit', '2048M' );
+        }
         $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
         $postfix = __('reset', 'aliyun-oss-upload');
         foreach ($files as $file){

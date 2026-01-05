@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 use OSS\OssClient;
 use OSS\Core\OssException;
 

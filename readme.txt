@@ -1,6 +1,6 @@
 === Aliyun OSS Upload ===
 
-Contributors: Karry
+Contributors: Karry, xiaomac
 Donate link: https://github.com/karrychow/wp-aliyun-oss-upload
 Tags: aliyun, oss, upload, media, files, storage, cloud, 阿里云, 媒体库, 图片, 上传, 云存储
 Requires at least: 5.0
@@ -12,29 +12,29 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-使用阿里云 OSS 作为媒体库附件存储空间，支持原创增强的 OSS 协议包装和全原生图像编辑及衍生功能。
+Use Aliyun OSS as WordPress media library attachment storage, supporting original enhanced OSS protocol wrapper and full native image editing and derivative functions.
 
-### 功能 ###
+### Features ###
 
-* 全新支持 remote image auto upload!
-* 全新 support large file auto multipart upload
-* 全新 support backup mode for easier switching
-* 独创 protocol supports all native upload functions
+* New support for remote image auto upload!
+* New support for large file auto multipart upload
+* New support for backup mode for easier switching
+* Original protocol supports all native upload functions
 * Support changing default image editor class
 * Support auto identify and generate WEBP format
-* With Chinese and English settings explanation and demo
+* With English settings explanation and demo
 
-注：横幅图片和图标来自 OSS 官网
+Note: Banner images and icons are from the official OSS website.
 
-### 更多 ###
+### More Info ###
 
-[https://github.com/KarryZhou/wp-aliyun-oss-upload](https://github.com/KarryZhou/wp-aliyun-oss-upload)
+[https://github.com/karrychow/wp-aliyun-oss-upload](https://github.com/karrychow/wp-aliyun-oss-upload)
 
 == Installation ==
 
 1. Upload the plugin folder to the "/wp-content/plugins/" directory of your WordPress site
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. See Settings -> WP Aliyun OSS Upload
+3. See Settings -> Aliyun OSS Upload
 
 == Frequently Asked Questions ==
 
@@ -52,270 +52,270 @@ None
 * Update to support PHP 8.2
 
 = 4.8.9 =
-* 修复个别主题会严重报错的问题
+* Fixed an issue where some themes would cause severe errors
 
 = 4.8.8 =
-* 修复伪协议包装的核心兼容问题
+* Fixed core compatibility issues with pseudo-protocol wrappers
 
 = 4.8.7 =
-* 保存远程图片兼容古藤堡编辑器
+* Save remote images compatible with Gutenberg editor
 
 = 4.8.6 =
-* 支持禁用高清分辨率的缩略图相关
+* Support disabling thumbnails for high-definition resolutions
 
 = 4.8.5 =
-* 优化目录上传等功能支持重复执行
-* 修复图片服务参数没编码引起的异常
-* 修复物理缩略图模式只有大图的问题
+* Optimized directory upload and other functions to support repeated execution
+* Fixed exceptions caused by unencoded image service parameters
+* Fixed the problem that physical thumbnail mode only has large images
 
 = 4.8.4 =
-* 修复图格模式会双重样式的问题
+* Fixed the issue of double styles in grid mode
 
 = 4.8.3 =
-* 修复远程上传和连接修正的逻辑
+* Fixed the logic of remote upload and connection correction
 
 = 4.8.2 =
-* 增强连接修正的兼容功能
+* Enhanced compatibility of connection correction
 
 = 4.8.1 =
-* 修复链接修正兼容已发布文章
+* Fixed link correction compatible with published articles
 
 = 4.8 =
-* 修复 WP5.3 大图片压缩问题
+* Fixed WP5.3 large image compression issues
 
 = 4.7 =
-* 新增远程上传也支持自动重命名
-* 新增禁用OSS时附件自动重定向
+* Added support for automatic renaming for remote uploads
+* Added automatic redirection of attachments when OSS is disabled
 
 = 4.6 =
-* 新增上传时自动重命名
-* 新增远程图片黑白名单
-* 加强远程图片上传兼容性
+* Added automatic renaming during upload
+* Added black and white lists for remote images
+* Enhanced compatibility for remote image uploads
 
 = 4.5 =
-* 加载类前判断
-* 取消代码混淆
+* Predetermine before loading classes
+* Cancel code obfuscation
 
 = 4.4 =
-* 简化了类的文件结构
-* 重新恢复了代码混淆
+* Simplified class file structure
+* Restored code obfuscation
 
 = 4.3.9 =
-* 修复上传本地目录时会丢失上传路径的目录的问题
+* Fixed an issue where uploading a local directory would lose the directory of the upload path
 
 = 4.3.8 =
-* 排除爬虫的图片加速效果
-* 排除非图片的压缩样式
-* 优化远程图片自动保存兼容性
-* 优化默认自带全图样式
-* 优化删除缩略图的功能
-* 修正导出个人数据出错
+* Exclude image acceleration effects for crawlers
+* Exclude compression styles for non-images
+* Optimize remote image auto-save compatibility
+* Optimize default full-image style
+* Optimize thumbnail deletion function
+* Fix error in exporting personal data
 
 = 4.3.7 =
-* 取消代码混淆
+* Cancel code obfuscation
 
 = 4.3.6 =
-* 优化远程保存的兼容性
-* 手机下不启用自动压缩
+* Optimize remote preservation compatibility
+* Do not enable auto compression under mobile
 
 = 4.3.5 =
-* 修复精准判断对象存在的逻辑
+* Fix logic for precisely determining object existence
 
 = 4.3.4 =
-* 新增远程图片自动保存的功能
-* 恢复物理缩略图以更兼容主题
-* 修复增强重新生成缩略图工具
-* 其他界面上和小工具的小调整
+* Added remote image auto-save function
+* Restored physical thumbnails for better theme compatibility
+* Fixed and enhanced thumbnail regeneration tool
+* Other small adjustments to interface and widgets
 
 = 4.3.3 =
-* 修正原图不带参数的问题
-* 修正非图片带参数的问题
-* 其他界面和翻译的小调整
+* Fix issue where full-size images do not carry parameters
+* Fix issue where non-images carry parameters
+* Other small adjustments to interface and translation
 
 = 4.3.2 =
-* 默认样式改为分隔符和原图样式
-* 支持自定义延时加载默认地址
-* 支持自定义缩略图质量参数
-* 优化非图片的上传逻辑
+* Default style changed to separator and full-size style
+* Support custom lazy load default address
+* Support custom thumbnail quality parameters
+* Optimize non-image upload logic
 
 = 4.3.1 =
-* 修正设置了默认样式下的动画样式
+* Corrected animation style under default style setting
 
 = 4.3 =
-* 前台增加 Lazyload 提升加载速度
-* 支持为 GIF 动画格式设置专门样式
-* 后台降低缩略图画质以提升加载速度
+* Added Lazyload to the front end to increase loading speed
+* Support setting special styles for GIF animation format
+* Lower thumbnail quality in the background to increase loading speed
 
 = 4.2.9 =
-* 优化一个底层文件接口
+* Optimized an underlying file interface
 
 = 4.2.8 =
-* 修正删除缩略图的BUG
-* 修正了原图样式的BUG
+* Fixed thumbnail deletion bug
+* Fixed full-size image style bug
 
 = 4.2.7 =
-* 修正一个本地测试导致的BUG
+* Fixed a bug caused by local testing
 
 = 4.2.6 =
-* 增加自动识别浏览器生成WebP
-* 增加工具可重新生成缩略图信息
-* 修正个别逻辑和工具的遍历BUG
+* Added automatic browser recognition to generate WebP
+* Added tool to regenerate thumbnail information
+* Fixed traversal bugs in individual logic and tools
 
 = 4.2.5 =
-* 修正小图片会自动删除的问题
+* Fixed issue where small images would be automatically deleted
 
 = 4.2.4 =
-* 修正非图片会本地备份的问题
+* Fixed issue where non-images would be backed up locally
 
 = 4.2.3 =
-* 修正了本地会莫名备份的问题
-* 增加了一个推广链接感谢支持
+* Fixed issue where local would be inexplicably backed up
+* Added a promotional link, thank you for your support
 
 = 4.2.2 =
-* 支持多站：子站可自动继承
-* 修正默认库不支持流的问题
-* 重新简化调整部分设置选项
+* Multisite support: sub-sites can be automatically inherited
+* Fixed issue where default library does not support streams
+* Simplified and adjusted some setting options
 
 = 4.2.1 =
-* 修正目录遍历接口可能返回空值
-* 清理缩略图功能支持本地和OSS
-* 增加小功能支持同步缺失附件
+* Fixed directory traversal interface potentially returning null values
+* Clean thumbnail function supports local and OSS
+* Added small function to support synchronization of missing attachments
 
 = 4.2 =
-* 修改逻辑默认全局接管
-* 修正内核问题支持索引
-* 自动兼容流和文件上传
-* 针对定位简化设置界面
-* 附带两个强大的小功能
+* Changed logic to default global takeover
+* Fixed core issues to support indexing
+* Automatic compatibility with stream and file uploads
+* Simplified settings interface for positioning
+* Comes with two powerful small functions
 
 = 4.1.2 =
-* 兼容 XMLRPC 附件上传
+* Compatible with XMLRPC attachment upload
 
 = 4.1.1 =
-* 修复OSS同名覆盖的问题
+* Fixed OSS overwriting with same name issue
 
 = 4.1 =
-* 支持添加新上传文件类型
-* 兼容域名协议不符的问题
-* 其他一些小优化
+* Support adding new upload file types
+* Compatible with domain protocol mismatch issues
+* Other small optimizations
 
 = 4.0.4 =
-* 新增报错反馈和优化代码
+* Added error feedback and optimized code
 
 = 4.0.3 =
-* 继续修正问题并优化代码
+* Continued to fix issues and optimize code
 
 = 4.0.2 =
-* 修正上传HTTP错误的问题
+* Fixed issue of HTTP errors during upload
 
 = 4.0.1 =
-* 修正修改了系统默认上传路径会导致上传出错的问题
+* Fixed issue where changing the system default upload path would cause upload errors
 
 = 4.0 =
-* 更新架构支持大文件自动分块
-* 新增备份模式支持冗余和切换
-* 附加标识重置功能兼容旧附件
+* Updated architecture to support automatic multipart for large files
+* New backup mode supports redundancy and switching
+* Additional logo reset function compatible with old attachments
 
 = 3.6 =
-* 物理缩略图支持原图后缀
-* 新增卸载插件时清理标记
-* 代码优化及翻译修正
+* Physical thumbnails support original image suffixes
+* Added cleanup flags when uninstalling the plugin
+* Code optimization and translation correction
 
 = 3.5 =
-* 新增支持自定义样式分隔符
-* 修正修改附件连接获取错误
+* Added support for custom style separators
+* Fixed correction of modified attachment connection retrieval errors
 
 = 3.4 =
-* 新增支持自定义特色图尺寸
-* 新增支持附件连接替换修正
-* 修正删除附件的目录逻辑
+* Added support for custom featured image sizes
+* Added support for attachment connection replacement correction
+* Fixed directory logic for deleting attachments
 
 = 3.3 =
-* 继续优化兼容
+* Continued optimization for compatibility
 
 = 3.2 =
-* 继续优化兼容逻辑
-* 上传附带默认函数
+* Continued optimization of compatibility logic
+* Upload with default function
 
 = 3.1 =
-* 继续优化兼容逻辑
-* 修改时删除缩略图
+* Continued optimization of compatibility logic
+* Delete thumbnails when modifying
 
 = 3.0 =
-* 优化兼容：自动判断并标记文件存储
-* 原图后缀：响应式标签兼容样式后缀
-* 快捷入口：媒体库添加插件设置入口
+* Optimize compatibility: automatically judge and mark file storage
+* Original image suffix: responsive tag compatible style suffix
+* Quick entry: Media library adds plugin setting entry
 
 = 2.9 =
-* 取消个别主题有兼容问题的钩子
+* Cancel hooks with compatibility issues for individual themes
 
 = 2.8 =
-* 修正上传插件和主题的错误
-* 针对缩略图主题增加一个钩子
+* Fixed errors in uploading plugins and themes
+* Added a hook for thumbnail themes
 
 = 2.7 =
-* 优化逻辑
-* 修复BUG
+* Optimize logic
+* Fix BUGs
 
 = 2.6 =
-* 优化加载逻辑更为简洁兼容
+* Optimize loading logic to be more concise and compatible
 
 = 2.5 =
-* 修复：库文件中定义时区可能引起的时间问题
+* Fixed: Time issue potentially caused by timezone definition in library files
 
 = 2.4 =
-* 优化：取消加载模式设置
+* Optimization: Cancel loading mode settings
 
 = 2.3 =
-* 修复：媒体库支持网格浏览
-* 修复：支持浏览非图片附件
+* Fixed: Media library supports grid browsing
+* Fixed: Support browsing non-image attachments
 
 = 2.2 =
-* 优化：更改缩略图设置后引起的兼容问题
-* 修正：旧版PHP一个EMPTY报错
+* Optimization: Compatibility issues caused by changing thumbnail settings
+* Fixed: An EMPTY error in old version of PHP
 
 = 2.1 =
-* 修正：完美兼容已上传的媒体文件
+* Fixed: Perfectly compatible with uploaded media files
 
 = 2.0 =
-* 优化：非全局加载模式各种完美兼容
-* 新增：支持全尺寸图片默认样式后缀
-* 新增：删除附件时自动删除各缩略图
+* Optimization: Perfect compatibility with non-global loading mode
+* Added: Support full-size image default style suffix
+* Added: Automatically delete thumbnails when deleting attachments
 
 = 1.9 =
-* 优化加载逻辑和兼容性
-* 修正库文件中一个错误
+* Optimize loading logic and compatibility
+* Fixed an error in the library file
 
 = 1.8 =
-* 新增兼容模式(默认为贪婪模式)
+* Added compatibility mode (greedy mode by default)
 
 = 1.7 =
-* 修改加载逻辑最大程度兼容其他插件
-* 插件严格只对媒体库的管理和显示生效
-* 修正不带年月子目录缩略图失效的问题
+* Change loading logic to maximize compatibility with other plugins
+* Plugin only takes effect on media library management and display
+* Fixed issue of thumbnail failure without year-month subdirectory
 
 = 1.6 =
-* 修正上传插件和主题的情况
+* Fixed case of uploading plugins and themes
 
 = 1.5 =
-* 支持图片服务
-* 调整后台设置
+* Support image service
+* Adjust background settings
 
 = 1.4 =
-* 增加测试功能
-* 端域默认非空
-* 默认三级域名
+* Added test function
+* Endpoint default non-empty
+* Default three-level domain name
 
 = 1.3 =
-* 支持修改默认图片编辑器类
-* 支持禁止生成多尺寸缩略图
-* 增加翻译和设置说明
+* Support modifying the default image editor class
+* Support prohibiting the generation of multi-size thumbnails
+* Added translation and setting description
 
 = 1.2 =
-* 兼容三级域名和地区设置
+* Compatible with three-level domain names and regional settings
 
 = 1.1 =
-* stand alone as a new one
+* Stand alone as a new one
 
 = 1.0 =
-* first release in Open Lazy
+* First release in Open Lazy
