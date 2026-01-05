@@ -48,8 +48,22 @@ function oss_upload_dir_loader(){
 
 function oss_upload_check_handle(){
     if(!defined('OSS_ACCESS_ID')) return false;
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    // For actions like upload-plugin and upload-theme, we can't add nonce verification
+    // So we'll ignore the nonce check for these specific WordPress core actions
     $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : (isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '');
+    // Allow certain core WordPress actions that don't have nonce
+    if (in_array($action, array('upload-plugin', 'upload-theme'))) {
+        return false;
+    }
+    // For other actions, check if it's a WordPress admin action that requires nonce verification
+    if (is_admin() && !empty($action) && !wp_doing_ajax()) {
+        // For non-core actions, we should have nonce verification
+        // For now, we'll continue with the original logic but add a check for specific admin actions
+        $nonced_actions = array('update', 'delete', 'edit', 'save', 'post'); // Common actions that should have nonce
+        if (in_array($action, $nonced_actions) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'] ?? '')), $action)) {
+            return false;
+        }
+    }    
     return in_array($action, array('upload-plugin', 'upload-theme')) ? false : true;
 }
 
@@ -193,10 +207,22 @@ function oss_upload_admin_init() {
         'sanitize_callback' => 'oss_upload_sanitize_options',
     ));
     if(!ouops('oss')) return;
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if(isset($_GET['page'], $_GET['action']) && $_GET['page'] == 'oss-upload') oss_upload_admin_action();
+    if(isset($_GET['page'], $_GET['action']) && $_GET['page'] == 'oss-upload') {
+        // Check for specific admin actions that require nonce verification
+        $admin_actions = array('clean', 'reset', 'sync', 'upload');
+        $action = sanitize_text_field(wp_unslash($_GET['action']));
+        if (in_array($action, $admin_actions)) {
+            // Verify nonce for dangerous admin actions - using same nonce action as in oss_upload_admin_action function
+            $nonce_action = 'oss_upload_action_' . $action;
+            $nonce = isset($_REQUEST['_wpnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])) : '';
+            if (!wp_verify_nonce($nonce, $nonce_action)) {
+                wp_die(__('Security check failed', 'aliyun-oss-upload'));
+            }
+        }
+        oss_upload_admin_action();
+    }
     if(ouops('oss_hd_thumbnail')) add_filter('big_image_size_threshold', '__return_false');
-   add_filter('wp_privacy_exports_dir', 'oss_upload_privacy_exports_dir');
+    add_filter('wp_privacy_exports_dir', 'oss_upload_privacy_exports_dir');
     add_filter('wp_privacy_exports_url', 'oss_upload_privacy_exports_url');
 }
 
