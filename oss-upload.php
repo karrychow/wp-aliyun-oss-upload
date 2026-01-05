@@ -193,8 +193,11 @@ function oss_upload_admin_init() {
         'sanitize_callback' => 'oss_upload_sanitize_options',
     ));
     if(!ouops('oss')) return;
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if(isset($_GET['page'], $_GET['action']) && $_GET['page'] == 'oss-upload') oss_upload_admin_action();
+    // Check for page parameter first, nonce will be verified inside oss_upload_admin_action
+    if(isset($_GET['page']) && $_GET['page'] == 'oss-upload' && !empty($_GET['action'])) {
+        // We still need to call the function but ensure it validates nonce internally
+        oss_upload_admin_action();
+    }
     if(ouops('oss_hd_thumbnail')) add_filter('big_image_size_threshold', '__return_false');
    add_filter('wp_privacy_exports_dir', 'oss_upload_privacy_exports_dir');
     add_filter('wp_privacy_exports_url', 'oss_upload_privacy_exports_url');
