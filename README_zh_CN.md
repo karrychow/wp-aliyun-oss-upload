@@ -34,6 +34,4 @@ https://github.com/karrychow/wp-aliyun-oss-upload/archive/main.zip
 
 ---
 
-<img alt="Screenshot" width="728" src="screenshot-1.png">
-
-<img alt="Screenshot" width="728" src="screenshot-2.png">
+<img alt="Screenshot" width="728" src="screenshot-zh.png">
