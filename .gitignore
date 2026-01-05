@@ -1,2 +1,5 @@
 build.sh
+.github
+lib/*/tests
+lib/*/sample
 aliyun-oss-upload.zip

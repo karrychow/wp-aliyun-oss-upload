@@ -234,10 +234,10 @@ final class OSSWrapper extends OU_ALIOSS {
 		self::__getURL($path);
 		$this->position = 0;
 		if ($this->mode == 'r') {
-			if (($this->buffer = self::get_object($this->url['host'], $this->url['path'])) !== false) {
-				if (is_object($this->buffer->body)) $this->buffer->body = (string)$this->buffer->body;
-                // Adapter returns OU_Response, body is string content
-                $this->buffer = $this->buffer->body;
+            $response = self::get_object($this->url['host'], $this->url['path']);
+			if ($response && $response->isOK()) {
+				if (is_object($response->body)) $response->body = (string)$response->body;
+                $this->buffer = $response->body;
 			} else return false;
 		} else {
             $this->buffer = ''; // Initialize buffer for writing

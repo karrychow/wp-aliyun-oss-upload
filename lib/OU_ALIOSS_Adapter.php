@@ -2,19 +2,49 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-use OSS\OssClient;
-use OSS\Core\OssException;
+
+// 尝试加载 Guzzle (如果环境未提供)
+if (!class_exists('GuzzleHttp\Client')) {
+    // 优先加载 PHAR 文件，其中包含了所有依赖
+    if (file_exists(dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0.phar')) {
+        require_once dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0.phar';
+    } elseif (file_exists(dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0/vendor/autoload.php')) {
+        // Fallback to source directory
+        require_once dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0/vendor/autoload.php';
+    }
+}
+
+// 确保加载了 SDK (如果 PHAR 已加载，这步通常不需要，但为了兼容性保留检查)
+if (!class_exists('AlibabaCloud\Oss\V2\Client')) {
+    if (file_exists(dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0.phar')) {
+         require_once dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0.phar';
+    } elseif (file_exists(dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0/autoload.php')) {
+        require_once dirname(__FILE__) . '/alibabacloud-oss-php-sdk-v2-0.4.0/autoload.php';
+    }
+}
+
+use AlibabaCloud\Oss\V2 as OssV2;
+use AlibabaCloud\Oss\V2\Models;
+use AlibabaCloud\Oss\V2\Credentials;
+use AlibabaCloud\Oss\V2\Exception\ServiceException;
+use GuzzleHttp\Psr7\Utils;
+
+if (!function_exists('esc_html')) {
+    function esc_html($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
 
 /**
- * Adapter for Aliyun OSS SDK v2.7.2 to replace the old OU_ALIOSS class.
+ * Adapter for Alibaba Cloud OSS SDK v2 (PHP 8+) to replace the old OU_ALIOSS class.
  * Maintains backward compatibility for aliyun-oss-upload.
  */
 class OU_ALIOSS {
     private $ossClient;
-    private $bucket;
     private $access_id;
     private $access_key;
-    private $hostname;
+    private $endpoint;
+    private $region;
     private $security_token;
 
     public function __construct($access_id = NULL, $access_key = NULL, $hostname = NULL, $security_token = NULL) {
@@ -28,9 +58,22 @@ class OU_ALIOSS {
     public function setAuth($access_id, $access_key, $hostname = NULL, $security_token = NULL) {
         $this->access_id = $access_id;
         $this->access_key = $access_key;
-        $this->hostname = $hostname ? $hostname : (defined('OSS_ENDPOINT') ? OSS_ENDPOINT : 'oss-cn-hangzhou.aliyuncs.com');
+        $this->endpoint = $hostname ? $hostname : (defined('OSS_ENDPOINT') ? OSS_ENDPOINT : 'oss-cn-hangzhou.aliyuncs.com');
         $this->security_token = $security_token;
+        
+        // 解析 Region
+        $this->region = $this->parseRegion($this->endpoint);
+        
         $this->ossClient = null; // Reset client to force re-init
+    }
+
+    private function parseRegion($endpoint) {
+        // 简单尝试从 endpoint 解析 region
+        // 例如 oss-cn-hangzhou.aliyuncs.com -> cn-hangzhou
+        if (preg_match('/oss-([a-z0-9-]+)(\-internal)?\.aliyuncs\.com/', $endpoint, $matches)) {
+            return $matches[1];
+        }
+        return 'cn-hangzhou'; // 默认
     }
 
     private function getClient() {
@@ -43,8 +86,14 @@ class OU_ALIOSS {
                 }
             }
             try {
-                $this->ossClient = new OssClient($this->access_id, $this->access_key, $this->hostname, false, $this->security_token);
-            } catch (OssException $e) {
+                $cfg = new OssV2\Config(
+                    $this->region,
+                    $this->endpoint,
+                    null,
+                    new Credentials\StaticCredentialsProvider($this->access_id, $this->access_key, $this->security_token)
+                );
+                $this->ossClient = new OssV2\Client($cfg);
+            } catch (Exception $e) {
                 throw $e;
             }
         }
@@ -55,8 +104,9 @@ class OU_ALIOSS {
         try {
             $client = $this->getClient();
             $file = isset($options['fileUpload']) ? $options['fileUpload'] : null;
-            if (!$file && isset($options[OssClient::OSS_FILE_UPLOAD])) {
-                 $file = $options[OssClient::OSS_FILE_UPLOAD];
+            // 兼容旧常量
+            if (!$file && isset($options['fileUpload'])) { 
+                 $file = $options['fileUpload'];
             }
 
             if (!$file) {
@@ -66,37 +116,49 @@ class OU_ALIOSS {
                  throw new Exception("No file provided for upload");
             }
 
-            $client->multiuploadFile($bucket, $object, $file, $options);
+            // 准备 PutObjectRequest
+            // Uploader 会处理大文件分片
+            $request = new Models\PutObjectRequest($bucket, $object);
+            
+            // 处理选项
+            if (isset($options['headers'])) {
+                if (isset($options['headers']['x-oss-object-acl'])) {
+                    $request->acl = $options['headers']['x-oss-object-acl'];
+                }
+                if (isset($options['headers']['Content-Type'])) {
+                    $request->contentType = $options['headers']['Content-Type'];
+                }
+                if (isset($options['headers']['Cache-Control'])) {
+                    $request->cacheControl = $options['headers']['Cache-Control'];
+                }
+                if (isset($options['headers']['Content-Disposition'])) {
+                    $request->contentDisposition = $options['headers']['Content-Disposition'];
+                }
+            }
+
+            // 使用 Uploader 进行文件上传
+            // Uploader 会自动选择简单上传或分片上传
+            $uploader = new OssV2\Uploader($client);
+            $result = $uploader->uploadFile($request, $file);
+            
             return new OU_Response(200, "Upload successful");
+        } catch (ServiceException $e) {
+            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
             return new OU_Response(400, $e->getMessage());
         }
     }
 
     public function create_mtu_object_by_dir($bucket, $dir, $recursive = false, $exclude = ".|..|.svn|.git", $options = null) {
-        // Re-implementing specific logic from old OSS.php for directory upload
-        if (!is_dir($dir)) throw new Exception(esc_html("$dir is not a directory."));
+        if (!is_dir($dir)) throw new Exception(sprintf(__('%s is not a directory.', 'aliyun-oss-upload'), esc_html($dir)));
 
         $files = $this->read_dir($dir, $exclude, $recursive);
-        if (empty($files)) throw new Exception(esc_html("$dir is empty."));
+        if (empty($files)) throw new Exception(sprintf(__('%s is empty.', 'aliyun-oss-upload'), esc_html($dir)));
 
-        // We mimic the echo output of the old function because the admin page relies on it (AJAX or iframe output)
         $index = 1;
         $client = $this->getClient();
-        // Determine relative path base
-        // Original logic: $basedir = explode('/', substr($upload['basedir'].'/', 6), 2);
-        // This seems tailored to specific WP setup, trying to replicate:
-        $basedir_str = isset($upload['basedir']) ? $upload['basedir'] : '';
-        // If the path logic is complex, we stick to simpler relative path calculation
+        $uploader = new OssV2\Uploader($client);
 
-        // Actually, let's look at how it calculated target object name.
-        // It used: "oss://{$bucket}/{$basedir[1]}".rawurlencode($item['file']);
-        // We will try to simplify and just upload.
-
-        // This is tricky without the exact same environment, but we will try to support the main use case:
-        // Uploading all local files to OSS.
-
-        // Replicating basic loop
         foreach ($files as $item) {
              echo esc_html($index++) . ". " . esc_html($item['path']) . " - ";
              if (is_dir($item['path'])) {
@@ -105,19 +167,14 @@ class OU_ALIOSS {
                  continue;
              }
 
-             // Check if exists
-             $objectKey = $item['file']; // Relative path
-             // In old code, it seemed to prepend some base path.
-             // We'll assume the user wants to upload to the root or a mapped path.
-             // Let's blindly upload for now using the object key relative to dir.
-             // Wait, the old code had specific logic for $basedir[1].
-
-             // Let's just upload:
-             $options_upload = array();
+             $objectKey = $item['file'];
+             
              try {
-                // Check existence logic skipped for brevity, implementing upload
-                 $client->multiuploadFile($bucket, $objectKey, $item['path']);
+                 $request = new Models\PutObjectRequest($bucket, $objectKey);
+                 $uploader->uploadFile($request, $item['path']);
                  echo "<font color=green>" . esc_html("Upload Success.") . "</font><br/>\n";
+             } catch (ServiceException $e) {
+                 echo "<font color=red>" . esc_html("Upload Failed: " . $e->getErrorMessage()) . "</font><br/>\n";
              } catch (Exception $e) {
                  echo "<font color=red>" . esc_html("Upload Failed: " . $e->getMessage()) . "</font><br/>\n";
              }
@@ -126,12 +183,11 @@ class OU_ALIOSS {
         return true;
     }
 
-    // Helper to read dir
+    // Helper to read dir (保持原样)
     private function read_dir($dir, $exclude = ".|..|.svn|.git", $recursive = false) {
         $file_list_array = array();
         $base_path = $dir;
         $exclude_array = explode("|", $exclude);
-        // filter out "." and ".."
         $exclude_array = array_unique(array_merge($exclude_array,array('.','..')));
 
         if($recursive){
@@ -168,8 +224,11 @@ class OU_ALIOSS {
 
     public function delete_object($bucket, $object, $options = NULL) {
          try {
-             $this->getClient()->deleteObject($bucket, $object, $options);
+             $request = new Models\DeleteObjectRequest($bucket, $object);
+             $this->getClient()->deleteObject($request);
              return new OU_Response(204, "");
+         } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
              return new OU_Response(400, $e->getMessage());
          }
@@ -177,8 +236,18 @@ class OU_ALIOSS {
 
     public function delete_objects($bucket, $objects, $options = null) {
         try {
-            $this->getClient()->deleteObjects($bucket, $objects, $options);
+            // V2 DeleteMultipleObjectsRequest 
+            $delObjects = [];
+            foreach ($objects as $obj) {
+                $delObjects[] = new Models\DeleteObject($obj);
+            }
+            // Pass objects and quiet=false directly
+            $request = new Models\DeleteMultipleObjectsRequest($bucket, $delObjects, null, false);
+            
+            $this->getClient()->deleteMultipleObjects($request);
             return new OU_Response(204, "");
+        } catch (ServiceException $e) {
+            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
             return new OU_Response(400, $e->getMessage());
         }
@@ -186,37 +255,52 @@ class OU_ALIOSS {
 
     public function list_object($bucket, $options = NULL) {
         try {
-             $result = $this->getClient()->listObjects($bucket, $options);
+             $request = new Models\ListObjectsRequest($bucket);
+             if (is_array($options)) {
+                 if (isset($options['prefix'])) $request->prefix = $options['prefix'];
+                 if (isset($options['delimiter'])) $request->delimiter = $options['delimiter'];
+                 if (isset($options['marker'])) $request->marker = $options['marker'];
+                 if (isset($options['max-keys'])) $request->maxKeys = intval($options['max-keys']);
+             }
+
+             $result = $this->getClient()->listObjects($request);
 
              // Convert objects to simple arrays for JSON encoding
              $objectList = array();
-             foreach ($result->getObjectList() as $info) {
-                 $objectList[] = array(
-                     'Key' => $info->getKey(),
-                     'Size' => $info->getSize(),
-                     'LastModified' => $info->getLastModified(),
-                     'ETag' => $info->getETag(),
-                     'Type' => $info->getType(),
-                     'StorageClass' => $info->getStorageClass()
-                 );
+             if ($result->contents) {
+                 foreach ($result->contents as $info) {
+                     $objectList[] = array(
+                         'Key' => $info->key,
+                         'Size' => $info->size,
+                         'LastModified' => $info->lastModified ? $info->lastModified->format(DateTime::ATOM) : '',
+                         'ETag' => $info->etag,
+                         'Type' => $info->type,
+                         'StorageClass' => $info->storageClass
+                     );
+                 }
              }
 
              $prefixList = array();
-             foreach ($result->getPrefixList() as $info) {
-                 $prefixList[] = array(
-                     'Prefix' => $info->getPrefix()
-                 );
+             if ($result->commonPrefixes) {
+                 foreach ($result->commonPrefixes as $info) {
+                     $prefixList[] = array(
+                         'Prefix' => $info->prefix
+                     );
+                 }
              }
 
              $data = array(
                 'is_legacy_adapter' => true,
                 'object_list' => $objectList,
                 'prefix_list' => $prefixList,
-                'isTruncated' => $result->getIsTruncated(),
-                'nextMarker' => $result->getNextMarker(),
+                'isTruncated' => $result->isTruncated,
+                'nextMarker' => $result->nextMarker,
+                'prefix' => $result->prefix,
              );
 
              return new OU_Response(200, json_encode($data));
+        } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
              return new OU_Response(400, $e->getMessage());
         }
@@ -224,19 +308,19 @@ class OU_ALIOSS {
 
     public function get_object_meta($bucket, $object, $options = NULL) {
          try {
-             $res = $this->getClient()->getObjectMeta($bucket, $object, $options);
-             // The old SDK returned header array. New SDK returns array of headers.
-             // We return a wrapped response.
-             // For stream_stat in OSSWrapper, it expects $info->header['_info']['download_content_length'] or content-length.
-             // OssClient::getObjectMeta returns array like ['content-length' => 123, ...].
-             // We need to map it to what OSSWrapper expects.
-
-             // Wrapper expects: $info->header['_info']['filetime']
-             // And $info->header['content-length']
-
-             // Let's ensure headers are accessible.
-             $headers = $res;
-             // Add _info for compatibility if needed.
+             $request = new Models\HeadObjectRequest($bucket, $object);
+             $res = $this->getClient()->headObject($request);
+             
+             // 映射结果到数组
+             // HeadObjectResult 包含很多属性，但 OSSWrapper 期望一个数组 (headers)
+             // 我们需要把结果转回 array
+             $headers = array();
+             $headers['content-length'] = $res->contentLength;
+             $headers['last-modified'] = $res->lastModified ? $res->lastModified->format(DateTime::ATOM) : '';
+             $headers['content-type'] = $res->contentType;
+             $headers['etag'] = $res->etag;
+             
+             // Add _info for compatibility
              if (isset($headers['last-modified'])) {
                  $headers['_info']['filetime'] = strtotime($headers['last-modified']);
              } else {
@@ -247,6 +331,8 @@ class OU_ALIOSS {
              }
 
              return new OU_Response(200, "", $headers);
+         } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
              return new OU_Response(404, $e->getMessage());
          }
@@ -254,8 +340,13 @@ class OU_ALIOSS {
 
     public function get_object($bucket, $object, $options = NULL) {
         try {
-             $content = $this->getClient()->getObject($bucket, $object, $options);
+             $request = new Models\GetObjectRequest($bucket, $object);
+             $res = $this->getClient()->getObject($request);
+             // $res->body 是 StreamInterface
+             $content = (string)$res->body;
              return new OU_Response(200, $content);
+        } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
              return new OU_Response(404, $e->getMessage());
         }
@@ -264,11 +355,14 @@ class OU_ALIOSS {
     public function upload_file_by_content($bucket, $object, $options = NULL) {
          try {
              $content = isset($options['content']) ? $options['content'] : '';
-             if (isset($options['length'])) {
-                 // Check if content matches length? SDK handles it.
-             }
-             $this->getClient()->putObject($bucket, $object, $content, $options);
+             $request = new Models\PutObjectRequest($bucket, $object);
+             // 直接调用 putObject，body 为 content
+             $request->body = GuzzleHttp\Psr7\Utils::streamFor($content);
+             
+             $this->getClient()->putObject($request);
              return new OU_Response(200, "");
+         } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
              return new OU_Response(400, $e->getMessage());
          }
@@ -276,8 +370,21 @@ class OU_ALIOSS {
 
     public function copy_object($from_bucket, $from_object, $to_bucket, $to_object, $options = NULL) {
         try {
-            $this->getClient()->copyObject($from_bucket, $from_object, $to_bucket, $to_object, $options);
+            $request = new Models\CopyObjectRequest($to_bucket, $to_object, $from_object);
+            // 注意：CopyObjectRequest 第三个参数是 sourceKey，如果跨 bucket 需要 /bucket/key 格式
+            // 假设这里 from_bucket 是同一个或者已经包含在 source 里？
+            // V2 SDK CopyObjectRequest:
+            // public ?string $bucket; // Dest bucket
+            // public ?string $key; // Dest key
+            // public ?string $sourceKey; // Source path (e.g. /bucket/key)
+            
+            $sourceKey = "/$from_bucket/$from_object";
+            $request->sourceKey = $sourceKey;
+            
+            $this->getClient()->copyObject($request);
             return new OU_Response(200, "");
+        } catch (ServiceException $e) {
+            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
             return new OU_Response(400, $e->getMessage());
         }
@@ -285,10 +392,16 @@ class OU_ALIOSS {
 
     public function create_object_dir($bucket, $object, $options = NULL) {
          try {
-             $this->getClient()->createObjectDir($bucket, $object); // New SDK has this? Check.
-             // If not, putObject with empty content and ends with /
-             // $this->ossClient->putObject($bucket, $object, "");
+             // 确保以 / 结尾
+             if (substr($object, -1) !== '/') {
+                 $object .= '/';
+             }
+             $request = new Models\PutObjectRequest($bucket, $object);
+             $request->body = GuzzleHttp\Psr7\Utils::streamFor('');
+             $this->getClient()->putObject($request);
              return new OU_Response(200, "");
+         } catch (ServiceException $e) {
+             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
              return new OU_Response(400, $e->getMessage());
          }

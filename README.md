@@ -1,6 +1,6 @@
 # Aliyun OSS Upload
 
-[中文版/Chinese Version](README_zh_CN.md)
+[中文版/Chinese Version](README-CN.md)
 
 Upload files to Aliyun OSS (Object Storage Service) as WordPress media library storage, with enhanced OSS protocol wrapper and full native image editing functions.
 
