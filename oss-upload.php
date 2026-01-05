@@ -48,6 +48,7 @@ function oss_upload_dir_loader(){
 
 function oss_upload_check_handle(){
     if(!defined('OSS_ACCESS_ID')) return false;
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
     $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : (isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '');
     return in_array($action, array('upload-plugin', 'upload-theme')) ? false : true;
 }
@@ -132,9 +133,9 @@ function oss_upload_handler($file, $errdel=true){
     $basedir = explode('/', substr($upload['basedir'].'/', 6), 2);
     $path = str_replace($upload['default']['basedir'].'/', '', $file);
     try{
-        if ( function_exists( 'set_time_limit' ) ) {
-            @set_time_limit( 0 );
-        }
+// if ( function_exists( 'set_time_limit' ) ) {
+        //     @set_time_limit( 0 );
+        // }
         $ossw = new OU_ALIOSS;
         $info = $ossw->create_mpu_object($basedir[0], $basedir[1].$path, array('fileUpload'=>$file));
         if(isset($_SESSION['oss_upload_error'])) unset($_SESSION['oss_upload_error']);
@@ -192,6 +193,7 @@ function oss_upload_admin_init() {
         'sanitize_callback' => 'oss_upload_sanitize_options',
     ));
     if(!ouops('oss')) return;
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
     if(isset($_GET['page'], $_GET['action']) && $_GET['page'] == 'oss-upload') oss_upload_admin_action();
     if(ouops('oss_hd_thumbnail')) add_filter('big_image_size_threshold', '__return_false');
    add_filter('wp_privacy_exports_dir', 'oss_upload_privacy_exports_dir');
@@ -340,7 +342,7 @@ function oss_upload_post_save($content){
     if(empty($post->ID) || !current_user_can('edit_post', $post->ID)) return $content;
 
     // Verify nonce
-    if (!isset($_POST['oss_upload_remote_nonce']) || !wp_verify_nonce($_POST['oss_upload_remote_nonce'], 'oss_upload_remote_action')) {
+    if (!isset($_POST['oss_upload_remote_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['oss_upload_remote_nonce'])), 'oss_upload_remote_action')) {
         return $content;
     }
     $upload = wp_get_upload_dir();
@@ -353,9 +355,9 @@ function oss_upload_post_save($content){
     $black = ouops('oss_remote_black') ? explode(',', trim(ouops('oss_remote_black'))) : false;
     $check = preg_match_all('/<img.*?(?<=data-src|data-original|data-original-src)="(.*?)"[^>]+>/', $content, $mx);
     if($check || preg_match_all('/<img.*? src="(.*?)"[^>]+>/', $content, $mx)){
-        if ( function_exists( 'set_time_limit' ) ) {
-            @set_time_limit( 0 );
-        }
+        // if ( function_exists( 'set_time_limit' ) ) {
+        //     @set_time_limit( 0 );
+        // }
         add_filter('http_request_args', 'oss_upload_request_unsafe', 11, 2);//for unsafe-image url
         $mxIndex = -1;
         foreach($mx[1] as $img){
@@ -673,6 +675,9 @@ function oss_upload_admin_note(){
     $screen = get_current_screen();
     if($screen->id != 'settings_page_oss-upload' || !ouops('oss') || !is_super_admin()) return;
     if(isset($_GET['settings-updated']) && $_GET['settings-updated'] == 'test'){
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'oss_upload_test' ) ) {
+             return; // Silent fail or message
+        }
         try{
             $rnd = md5(time());
             $file = ouops('oss_path').'/oss_upload_'.$rnd.'.txt';
@@ -718,13 +723,13 @@ function oss_upload_admin_action(){
     if(empty($action) || !is_super_admin()) return;
 
     // Add nonce verification
-    if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'oss_upload_action_' . $action)) {
+    if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'oss_upload_action_' . $action)) {
         wp_die(esc_html__('Security check failed', 'aliyun-oss-upload'));
     }
 
-    if ( function_exists( 'set_time_limit' ) ) {
-        @set_time_limit( 0 );
-    }
+    // if ( function_exists( 'set_time_limit' ) ) {
+    //     @set_time_limit( 0 );
+    // }
     ob_end_clean();
     echo esc_html(str_pad('',1024));
     echo '<title>' . esc_html__('Aliyun OSS Upload','aliyun-oss-upload') . '</title>';
@@ -803,7 +808,7 @@ function oss_upload_admin_action(){
     }else if($action == 'reset'){
         // Only increase memory if absolutely necessary and not globally
         if ( function_exists( 'ini_set' ) ) {
-            @ini_set( 'memory_limit', '2048M' );
+            // @ini_set( 'memory_limit', '2048M' );
         }
         $files = get_posts(array('post_type'=>'attachment', 'posts_per_page'=>-1));
         $postfix = __('reset', 'aliyun-oss-upload');
@@ -894,7 +899,8 @@ function oss_upload_options_page(){
         <td>
             <?php
             if(ouops('oss') && ouops('oss_akey') && ouops('oss_skey') && ouops('oss_endpoint')){
-                echo wp_kses_post(oss_upload_link('options-general.php?page=aliyun-oss-upload&settings-updated=test', __('Run a test', 'aliyun-oss-upload'), 'p,button'));
+                $test_nonce = wp_create_nonce('oss_upload_test');
+                echo wp_kses_post(oss_upload_link('options-general.php?page=aliyun-oss-upload&settings-updated=test&_wpnonce=' . $test_nonce, __('Run a test', 'aliyun-oss-upload'), 'p,button'));
             } ?>
         </td></tr>
         <tr valign="top">

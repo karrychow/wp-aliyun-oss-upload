@@ -140,10 +140,10 @@ class OssClient
         $endpoint = trim(trim($endpoint), "/");
 
         if (empty($accessKeyId)) {
-            throw new OssException("access key id is empty");
+            throw new OssException(esc_html("access key id is empty"));
         }
         if (empty($accessKeySecret)) {
-            throw new OssException("access key secret is empty");
+            throw new OssException(esc_html("access key secret is empty"));
         }
         $provider = new StaticCredentialsProvider($accessKeyId, $accessKeySecret, $securityToken);
         $config = array(
@@ -166,7 +166,7 @@ class OssClient
         $requestProxy = isset($config['request_proxy']) ? $config['request_proxy'] : null;
         $provider = isset($config['provider']) ? $config['provider'] : '';
         if (empty($endpoint)) {
-            throw new OssException("endpoint is empty");
+            throw new OssException(esc_html("endpoint is empty"));
         }
         $this->hostname = $this->checkEndpoint($endpoint, $isCName);
         if (isset($config['forcePathStyle'])) {
@@ -176,7 +176,7 @@ class OssClient
         }
         $this->requestProxy = $requestProxy;
         if (!$provider instanceof CredentialsProvider) {
-            throw new OssException("provider must be an instance of CredentialsProvider");
+            throw new OssException(esc_html("provider must be an instance of CredentialsProvider"));
         }
         $this->provider = $provider;
 
@@ -239,7 +239,7 @@ class OssClient
     public function listBuckets($options = NULL)
     {
         if ($this->hostType === self::OSS_HOST_TYPE_CNAME) {
-            throw new OssException("operation is not permitted with CName host");
+            throw new OssException(esc_html("operation is not permitted with CName host"));
         }
         $this->precheckOptions($options);
         $options[self::OSS_BUCKET] = '';
@@ -1924,7 +1924,7 @@ class OssClient
     {
         $this->precheckCommon($bucket, $object, $options);
         if (!is_resource($handle)) {
-            throw new OssException("The handle must be an opened stream");
+            throw new OssException(esc_html("The handle must be an opened stream"));
         }
         $options[self::OSS_FILE_UPLOAD] = $handle;
         if ($this->isCheckMD5($options)) {
@@ -2669,7 +2669,7 @@ class OssClient
             unset($options[self::OSS_LENGTH]);
         }
         if (empty($file)) {
-            throw new OssException("parameter invalid, file is empty");
+            throw new OssException(esc_html("parameter invalid, file is empty"));
         }
         $uploadFile = $this->encodeFilePath($file);
         if (!isset($options[self::OSS_CONTENT_TYPE])) {
@@ -2689,7 +2689,7 @@ class OssClient
         }
 
         if ($upload_position === false || !isset($upload_file_size) || $upload_file_size === false || $upload_file_size < 0) {
-            throw new OssException('The size of `fileUpload` cannot be determined in ' . __FUNCTION__ . '().');
+            throw new OssException(esc_html('The size of `fileUpload` cannot be determined in ') . __FUNCTION__ . '().');
         }
         // Computes the part size and assign it to options.
         if (isset($options[self::OSS_PART_SIZE])) {
@@ -2766,9 +2766,9 @@ class OssClient
     public function uploadDir($bucket, $prefix, $localDirectory, $exclude = '.|..|.svn|.git', $recursive = false, $checkMd5 = true)
     {
         $retArray = array("succeededList" => array(), "failedList" => array());
-        if (empty($bucket)) throw new OssException("parameter error, bucket is empty");
-        if (!is_string($prefix)) throw new OssException("parameter error, prefix is not string");
-        if (empty($localDirectory)) throw new OssException("parameter error, localDirectory is empty");
+        if (empty($bucket)) throw new OssException(esc_html("parameter error, bucket is empty"));
+        if (!is_string($prefix)) throw new OssException(esc_html("parameter error, prefix is not string"));
+        if (empty($localDirectory)) throw new OssException(esc_html("parameter error, localDirectory is empty"));
         $directory = $localDirectory;
         $directory = $this->encodeFilePath($directory);
         //If it's not the local directory, throw OSSException.
@@ -2839,7 +2839,7 @@ class OssClient
         $cred = $this->provider->getCredentials();
         //method
         if (self::OSS_HTTP_GET !== $method && self::OSS_HTTP_PUT !== $method) {
-            throw new OssException("method is invalid");
+            throw new OssException(esc_html("method is invalid"));
         }
         // Should https or http be used?
         $scheme = $this->useSSL ? 'https://' : 'http://';
@@ -2958,7 +2958,7 @@ class OssClient
                     break;
             }
         }
-        throw new OssException('storage name is invalid');
+        throw new OssException(esc_html('storage name is invalid'));
     }
 
     /**
@@ -3483,13 +3483,13 @@ class OssClient
     private function checkCredentials($credential)
     {
         if (empty($credential)) {
-            throw new OssException("credentials is empty.");
+            throw new OssException(esc_html("credentials is empty."));
         }
         if (strlen($credential->getAccessKeyId()) == 0) {
-            throw new OssException("access key id is empty");
+            throw new OssException(esc_html("access key id is empty"));
         }
         if (strlen($credential->getAccessKeySecret()) == 0) {
-            throw new OssException("access key secret is empty");
+            throw new OssException(esc_html("access key secret is empty"));
         }
     }
 
@@ -3598,10 +3598,10 @@ class OssClient
                     }
                 }
             } else {
-                throw new OssException("function get_loaded_extensions not found.");
+                throw new OssException(esc_html("function get_loaded_extensions not found."));
             }
         } else {
-            throw new OssException('Function get_loaded_extensions has been disabled, please check php config.');
+            throw new OssException(esc_html('Function get_loaded_extensions has been disabled, please check php config.'));
         }
     }
 
