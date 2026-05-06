@@ -3,8 +3,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if (!function_exists('oss_substr')) {
-    function oss_substr($string, $start, $length = null) {
+if (!function_exists('krmos_substr')) {
+    function krmos_substr($string, $start, $length = null) {
         if ($string === null || $string === false) {
             $string = '';
         }
@@ -15,8 +15,8 @@ if (!function_exists('oss_substr')) {
     }
 }
 
-if (!function_exists('oss_strlen')) {
-    function oss_strlen($string) {
+if (!function_exists('krmos_strlen')) {
+    function krmos_strlen($string) {
         if ($string === null || $string === false) {
             return 0;
         }
@@ -27,7 +27,7 @@ if (!function_exists('oss_strlen')) {
 // Ensure the adapter is loaded
 // require_once('OU_ALIOSS_Adapter.php'); // This will be loaded by oss-upload.php
 
-final class OSSWrapper extends OU_ALIOSS {
+final class KRMOS_OSS_Stream_Wrapper extends KRMOS_OSS_Adapter {
 	private $position = 0, $mode = '', $buffer;
 
     // PHP 8.2+ compatibility: Explicitly declare dynamic properties
@@ -337,13 +337,13 @@ final class OSSWrapper extends OU_ALIOSS {
         $this->url = wp_parse_url($path);
         if(!isset($this->url['scheme']) || $this->url['scheme'] !== 'oss') return $this->url;
 
-        // This calls the OU_ALIOSS_Adapter's setAuth, ensuring we use defined constants.
-        // Note: OSSWrapper inherits __construct, but stream usage doesn't call it.
+        // This calls the adapter's setAuth, ensuring we use defined constants.
+        // Note: the stream wrapper inherits __construct, but stream usage doesn't call it.
         // We explicitly call setAuth here.
-        if(defined('OSS_ACCESS_ID') && defined('OSS_ACCESS_KEY')) {
-            self::setAuth(OSS_ACCESS_ID, OSS_ACCESS_KEY);
+        if(defined('KRMOS_OSS_ACCESS_ID') && defined('KRMOS_OSS_ACCESS_KEY')) {
+            self::setAuth(KRMOS_OSS_ACCESS_ID, KRMOS_OSS_ACCESS_KEY, defined('KRMOS_OSS_ENDPOINT') ? KRMOS_OSS_ENDPOINT : null);
         }
         $this->url['path'] = isset($this->url['path']) ? $this->safeSubstr($this->url['path'], 1) : '';
     }
 }
-stream_wrapper_register('oss', 'OSSWrapper');
+stream_wrapper_register(KRMOS_OSS_STREAM_SCHEME, 'KRMOS_OSS_Stream_Wrapper');

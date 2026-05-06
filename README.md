@@ -1,4 +1,4 @@
-# Aliyun OSS Upload
+# LazyAIChief Remote Media Storage with Aliyun OSS
 
 [中文版/Chinese Version](README-CN.md)
 
@@ -22,7 +22,7 @@ https://github.com/karrychow/wp-aliyun-oss-upload/archive/main.zip
 
 1. Upload the plugin folder to `/wp-content/plugins/` directory of your WordPress site
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to Settings → Aliyun OSS Upload to configure
+3. Go to Settings → LazyAIChief Remote Media Storage with Aliyun OSS to configure
 
 ## About This Fork
 
@@ -37,4 +37,3 @@ The original author hasn't updated the project for several years and it was no l
 ---
 
 <img alt="Screenshot" width="728" src="screenshot-en.png">
-

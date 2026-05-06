@@ -1,13 +1,13 @@
-=== Aliyun OSS Upload ===
+=== LazyAIChief Remote Media Storage with Aliyun OSS ===
 Contributors: karrychow
 Tags: aliyun, oss, upload, media, cloud storage
 Requires at least: 5.0
-Tested up to: 6.4
-Stable tag: 1.0.0
+Tested up to: 6.9
+Stable tag: 4.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Upload files to Aliyun OSS (Object Storage Service) as WordPress media library storage, with enhanced OSS protocol wrapper and full native image editing functions.
+Store WordPress media in Aliyun OSS with native image handling, remote image sync, local backup, and WebP/lazyload support.
 
 == Description ==
 
@@ -35,7 +35,7 @@ This plugin connects to the Alibaba Cloud Object Storage Service (Aliyun OSS) to
 
 1. Upload the plugin folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Go to Settings -> Aliyun OSS Upload to configure your OSS credentials and bucket information.
+3. Go to Settings -> LazyAIChief Remote Media Storage with Aliyun OSS to configure your OSS credentials and bucket information.
 
 == Screenshots ==
 

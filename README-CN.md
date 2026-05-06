@@ -1,4 +1,4 @@
-# Aliyun OSS Upload (中文版)
+# LazyAIChief Remote Media Storage with Aliyun OSS (中文版)
 
 使用阿里云 OSS (对象存储) 作为 WordPress 媒体库存储，支持增强的 OSS 协议包装和全原生图像编辑功能。
 
@@ -20,7 +20,7 @@ https://github.com/karrychow/wp-aliyun-oss-upload/archive/main.zip
 
 1. 将插件文件夹上传到 WordPress 站点的 `/wp-content/plugins/` 目录
 2. 在 WordPress 后台的“插件”菜单中启用该插件
-3. 前往“设置” → “Aliyun OSS Upload”进行配置
+3. 前往“设置” → “LazyAIChief Remote Media Storage with Aliyun OSS”进行配置
 
 ## 关于此分支
 

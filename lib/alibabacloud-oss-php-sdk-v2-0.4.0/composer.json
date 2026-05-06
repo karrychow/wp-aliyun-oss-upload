@@ -26,5 +26,11 @@
         "psr-4": {
             "AlibabaCloud\\Oss\\V2\\": "src"
         }
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://repo.packagist.org"
+        }
     }
 }

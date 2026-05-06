@@ -29,17 +29,11 @@ use AlibabaCloud\Oss\V2\Credentials;
 use AlibabaCloud\Oss\V2\Exception\ServiceException;
 use GuzzleHttp\Psr7\Utils;
 
-if (!function_exists('esc_html')) {
-    function esc_html($text) {
-        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-    }
-}
-
 /**
  * Adapter for Alibaba Cloud OSS SDK v2 (PHP 8+) to replace the old OU_ALIOSS class.
- * Maintains backward compatibility for aliyun-oss-upload.
+ * Maintains backward compatibility for lazyaichief-remote-media-storage-aliyun-oss.
  */
-class OU_ALIOSS {
+class KRMOS_OSS_Adapter {
     private $ossClient;
     private $access_id;
     private $access_key;
@@ -50,15 +44,15 @@ class OU_ALIOSS {
     public function __construct($access_id = NULL, $access_key = NULL, $hostname = NULL, $security_token = NULL) {
         if ($access_id && $access_key) {
             $this->setAuth($access_id, $access_key, $hostname, $security_token);
-        } elseif (defined('OSS_ACCESS_ID') && defined('OSS_ACCESS_KEY')) {
-            $this->setAuth(OSS_ACCESS_ID, OSS_ACCESS_KEY, defined('OSS_ENDPOINT') ? OSS_ENDPOINT : NULL);
+        } elseif (defined('KRMOS_OSS_ACCESS_ID') && defined('KRMOS_OSS_ACCESS_KEY')) {
+            $this->setAuth(KRMOS_OSS_ACCESS_ID, KRMOS_OSS_ACCESS_KEY, defined('KRMOS_OSS_ENDPOINT') ? KRMOS_OSS_ENDPOINT : NULL);
         }
     }
 
     public function setAuth($access_id, $access_key, $hostname = NULL, $security_token = NULL) {
         $this->access_id = $access_id;
         $this->access_key = $access_key;
-        $this->endpoint = $hostname ? $hostname : (defined('OSS_ENDPOINT') ? OSS_ENDPOINT : 'oss-cn-hangzhou.aliyuncs.com');
+        $this->endpoint = $hostname ? $hostname : (defined('KRMOS_OSS_ENDPOINT') ? KRMOS_OSS_ENDPOINT : 'oss-cn-hangzhou.aliyuncs.com');
         $this->security_token = $security_token;
         
         // 解析 Region
@@ -79,8 +73,8 @@ class OU_ALIOSS {
     private function getClient() {
         if (!$this->ossClient) {
             if (!$this->access_id || !$this->access_key) {
-                if (defined('OSS_ACCESS_ID') && defined('OSS_ACCESS_KEY')) {
-                     $this->setAuth(OSS_ACCESS_ID, OSS_ACCESS_KEY, defined('OSS_ENDPOINT') ? OSS_ENDPOINT : NULL);
+                if (defined('KRMOS_OSS_ACCESS_ID') && defined('KRMOS_OSS_ACCESS_KEY')) {
+                     $this->setAuth(KRMOS_OSS_ACCESS_ID, KRMOS_OSS_ACCESS_KEY, defined('KRMOS_OSS_ENDPOINT') ? KRMOS_OSS_ENDPOINT : NULL);
                 } else {
                     throw new Exception("OSS credentials not set");
                 }
@@ -141,21 +135,21 @@ class OU_ALIOSS {
             $uploader = new OssV2\Uploader($client);
             $result = $uploader->uploadFile($request, $file);
             
-            return new OU_Response(200, "Upload successful");
+            return new KRMOS_OSS_Response(200, "Upload successful");
         } catch (ServiceException $e) {
-            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+            return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
-            return new OU_Response(400, $e->getMessage());
+            return new KRMOS_OSS_Response(400, $e->getMessage());
         }
     }
 
     public function create_mtu_object_by_dir($bucket, $dir, $recursive = false, $exclude = ".|..|.svn|.git", $options = null) {
         /* translators: %s: directory path */
-        if (!is_dir($dir)) throw new Exception(sprintf(esc_html__('%s is not a directory.', 'aliyun-oss-upload'), esc_html($dir)));
+        if (!is_dir($dir)) throw new Exception(sprintf(esc_html__('%s is not a directory.', 'lazyaichief-remote-media-storage-aliyun-oss'), esc_html($dir)));
 
         $files = $this->read_dir($dir, $exclude, $recursive);
         /* translators: %s: directory path */
-        if (empty($files)) throw new Exception(sprintf(esc_html__('%s is empty.', 'aliyun-oss-upload'), esc_html($dir)));
+        if (empty($files)) throw new Exception(sprintf(esc_html__('%s is empty.', 'lazyaichief-remote-media-storage-aliyun-oss'), esc_html($dir)));
 
         $index = 1;
         $client = $this->getClient();
@@ -228,11 +222,11 @@ class OU_ALIOSS {
          try {
              $request = new Models\DeleteObjectRequest($bucket, $object);
              $this->getClient()->deleteObject($request);
-             return new OU_Response(204, "");
+             return new KRMOS_OSS_Response(204, "");
          } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
-             return new OU_Response(400, $e->getMessage());
+             return new KRMOS_OSS_Response(400, $e->getMessage());
          }
     }
 
@@ -247,11 +241,11 @@ class OU_ALIOSS {
             $request = new Models\DeleteMultipleObjectsRequest($bucket, $delObjects, null, false);
             
             $this->getClient()->deleteMultipleObjects($request);
-            return new OU_Response(204, "");
+            return new KRMOS_OSS_Response(204, "");
         } catch (ServiceException $e) {
-            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+            return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
-            return new OU_Response(400, $e->getMessage());
+            return new KRMOS_OSS_Response(400, $e->getMessage());
         }
     }
 
@@ -300,11 +294,11 @@ class OU_ALIOSS {
                 'prefix' => $result->prefix,
              );
 
-             return new OU_Response(200, json_encode($data));
+             return new KRMOS_OSS_Response(200, json_encode($data));
         } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
-             return new OU_Response(400, $e->getMessage());
+             return new KRMOS_OSS_Response(400, $e->getMessage());
         }
     }
 
@@ -332,11 +326,11 @@ class OU_ALIOSS {
                  $headers['_info']['download_content_length'] = $headers['content-length'];
              }
 
-             return new OU_Response(200, "", $headers);
+             return new KRMOS_OSS_Response(200, "", $headers);
          } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
-             return new OU_Response(404, $e->getMessage());
+             return new KRMOS_OSS_Response(404, $e->getMessage());
          }
     }
 
@@ -346,11 +340,11 @@ class OU_ALIOSS {
              $res = $this->getClient()->getObject($request);
              // $res->body 是 StreamInterface
              $content = (string)$res->body;
-             return new OU_Response(200, $content);
+             return new KRMOS_OSS_Response(200, $content);
         } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
-             return new OU_Response(404, $e->getMessage());
+             return new KRMOS_OSS_Response(404, $e->getMessage());
         }
     }
 
@@ -362,11 +356,11 @@ class OU_ALIOSS {
              $request->body = GuzzleHttp\Psr7\Utils::streamFor($content);
              
              $this->getClient()->putObject($request);
-             return new OU_Response(200, "");
+             return new KRMOS_OSS_Response(200, "");
          } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
-             return new OU_Response(400, $e->getMessage());
+             return new KRMOS_OSS_Response(400, $e->getMessage());
          }
     }
 
@@ -384,11 +378,11 @@ class OU_ALIOSS {
             $request->sourceKey = $sourceKey;
             
             $this->getClient()->copyObject($request);
-            return new OU_Response(200, "");
+            return new KRMOS_OSS_Response(200, "");
         } catch (ServiceException $e) {
-            return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+            return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
         } catch (Exception $e) {
-            return new OU_Response(400, $e->getMessage());
+            return new KRMOS_OSS_Response(400, $e->getMessage());
         }
     }
 
@@ -401,16 +395,16 @@ class OU_ALIOSS {
              $request = new Models\PutObjectRequest($bucket, $object);
              $request->body = GuzzleHttp\Psr7\Utils::streamFor('');
              $this->getClient()->putObject($request);
-             return new OU_Response(200, "");
+             return new KRMOS_OSS_Response(200, "");
          } catch (ServiceException $e) {
-             return new OU_Response($e->getStatusCode(), $e->getErrorMessage());
+             return new KRMOS_OSS_Response($e->getStatusCode(), $e->getErrorMessage());
          } catch (Exception $e) {
-             return new OU_Response(400, $e->getMessage());
+             return new KRMOS_OSS_Response(400, $e->getMessage());
          }
     }
 }
 
-class OU_Response {
+class KRMOS_OSS_Response {
     public $status;
     public $body;
     public $header;
