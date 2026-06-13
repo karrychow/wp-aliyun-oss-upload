@@ -32,7 +32,8 @@ The original author hasn't updated the project for several years and it was no l
 
 ## More Information
 
-[https://github.com/karrychow/wp-aliyun-oss-upload](https://github.com/karrychow/wp-aliyun-oss-upload)
+- Repository: [https://github.com/karrychow/wp-aliyun-oss-upload](https://github.com/karrychow/wp-aliyun-oss-upload)
+- Author: karry — [imkarry.com](https://www.imkarry.com)
 
 ---
 
